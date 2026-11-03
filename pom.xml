@@ -21,6 +21,8 @@
         <module>gateway</module>
         <module>user-service</module>
         <module>user-service-client</module>
+        <module>seckill-service</module>
+        <module>seckill-service-client</module>
     </modules>
 
     <properties>

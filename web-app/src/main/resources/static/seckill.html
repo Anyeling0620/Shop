@@ -1,0 +1,203 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <title>秒杀</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <!-- jquery -->
+    <script type="text/javascript" src="/js/jquery.min.js"></script>
+    <!-- bootstrap -->
+    <link rel="stylesheet" type="text/css" href="/bootstrap/css/bootstrap.min.css"/>
+    <script type="text/javascript" src="/bootstrap/js/bootstrap.min.js"></script>
+    <!-- layer -->
+    <script type="text/javascript" src="/layer/layer.js"></script>
+    <!-- common.js -->
+    <script type="text/javascript" src="/js/common.js"></script>
+</head>
+<body>
+
+<div class="panel panel-default">
+    <div class="panel-heading">
+        秒杀商品列表
+        <div align="right">
+            <span id="userInfo"></span>
+        </div>
+    </div>
+    <table class="table" id="goodslist">
+        <tr>
+            <td>商品名称</td>
+            <td>商品图片</td>
+            <td>商品原价</td>
+            <td>秒杀价</td>
+            <td>秒杀库存</td>
+            <td>开始时间</td>
+            <td>结束时间</td>
+            <td>操作</td>
+        </tr>
+    </table>
+</div>
+
+</body>
+<script>
+    // 网关地址（gateway 已允许 localhost:18004 跨域）
+    var g_gateway_base = "http://localhost:8081";
+    var g_seckill_base = g_gateway_base + "/seckill/seckill";
+
+    // 与登录服务约定一致：从 cookie 中取 token，放入请求头 zhuawa-shop-token
+    $.ajaxSetup({
+        beforeSend: function (xhr) {
+            xhr.setRequestHeader('zhuawa-shop-token', getToken());
+        }
+    });
+
+    function getToken() {
+        var cookies = document.cookie.split(";");
+        for (var i = 0; i < cookies.length; i++) {
+            var kv = cookies[i].trim().split("=");
+            if (kv[0] == "zhuawa-shop-token") {
+                return kv[1];
+            }
+        }
+        return "";
+    }
+
+    $(function () {
+        getUserInfo();
+        getSeckillGoodsList();
+    });
+
+    function getUserInfo() {
+        $.ajax({
+            url: g_gateway_base + "/user/user/info",
+            type: "GET",
+            xhrFields: {withCredentials: true},
+            crossDomain: true,
+            success: function (data) {
+                if (data.code == 0) {
+                    $("#userInfo").text("欢迎您, " + data.data.nickname);
+                } else {
+                    $("#userInfo").html("<a href='/login.html'>请先登录</a>");
+                }
+            },
+            error: function () {
+                $("#userInfo").html("<a href='/login.html'>请先登录</a>");
+            }
+        });
+    }
+
+    function getSeckillGoodsList() {
+        $.ajax({
+            url: g_seckill_base + "/list",
+            type: "GET",
+            xhrFields: {withCredentials: true},
+            crossDomain: true,
+            success: function (data) {
+                if (data.code == 0) {
+                    renderGoodsList(data.data);
+                } else {
+                    layer.msg(data.msg);
+                }
+            },
+            error: function () {
+                layer.msg("客户端请求有误");
+            }
+        });
+    }
+
+    function renderGoodsList(goodsList) {
+        for (var i = 0; i < goodsList.length; i++) {
+            var goods = goodsList[i];
+            var tr = $("<tr/>");
+            tr.append("<td>" + goods.name + "</td>");
+            tr.append("<td><img src='" + goods.img + "' width='80' height='60'/></td>");
+            tr.append("<td>" + goods.price + "</td>");
+            tr.append("<td style='color:red;'>" + goods.priceSeckill + "</td>");
+            tr.append("<td>" + goods.stockSeckill + "</td>");
+            tr.append("<td>" + fmtDate(goods.startTime) + "</td>");
+            tr.append("<td>" + fmtDate(goods.endTime) + "</td>");
+            var btn = $("<button class='btn btn-primary' onclick='doSeckill(" + goods.goodsId + ")'>秒杀</button>");
+            var td = $("<td/>");
+            td.append(btn);
+            tr.append(td);
+            $("#goodslist").append(tr);
+        }
+    }
+
+    function fmtDate(ts) {
+        if (!ts) return "-";
+        return new Date(ts).format("yyyy-MM-dd hh:mm:ss");
+    }
+
+    // 1. 获取混淆 path  2. 执行秒杀  3. 轮询结果
+    function doSeckill(goodsId) {
+        $.ajax({
+            url: g_seckill_base + "/path/" + goodsId,
+            type: "GET",
+            xhrFields: {withCredentials: true},
+            crossDomain: true,
+            success: function (data) {
+                if (data.code != 0) {
+                    layer.msg(data.msg);
+                    return;
+                }
+                executeSeckill(data.data, goodsId);
+            },
+            error: function () {
+                layer.msg("获取秒杀地址失败");
+            }
+        });
+    }
+
+    function executeSeckill(path, goodsId) {
+        $.ajax({
+            url: g_seckill_base + "/" + path + "/do/" + goodsId,
+            type: "POST",
+            xhrFields: {withCredentials: true},
+            crossDomain: true,
+            success: function (data) {
+                if (data.code != 0) {
+                    layer.msg(data.msg);
+                    return;
+                }
+                // 排队中，轮询结果
+                var loading = g_showLoading();
+                pollSeckillResult(goodsId, loading);
+            },
+            error: function () {
+                layer.msg("秒杀请求失败");
+            }
+        });
+    }
+
+    function pollSeckillResult(goodsId, loading) {
+        $.ajax({
+            url: g_seckill_base + "/result/" + goodsId,
+            type: "GET",
+            xhrFields: {withCredentials: true},
+            crossDomain: true,
+            success: function (data) {
+                if (data.code != 0) {
+                    layer.close(loading);
+                    layer.msg(data.msg);
+                    return;
+                }
+                var result = data.data;
+                if (result > 0) { // 秒杀成功，返回订单id
+                    layer.close(loading);
+                    layer.msg("秒杀成功！订单号：" + result, {icon: 1, time: 3000});
+                } else if (result == 0) { // 排队中
+                    setTimeout(function () {
+                        pollSeckillResult(goodsId, loading);
+                    }, 500);
+                } else { // 秒杀失败
+                    layer.close(loading);
+                    layer.msg("秒杀失败，商品已被抢光", {icon: 2});
+                }
+            },
+            error: function () {
+                layer.close(loading);
+                layer.msg("查询秒杀结果失败");
+            }
+        });
+    }
+</script>
+</html>

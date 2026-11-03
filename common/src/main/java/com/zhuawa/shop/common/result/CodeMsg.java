@@ -22,6 +22,16 @@ public class CodeMsg {
     public static CodeMsg GOODS_NOT_EXIST = new CodeMsg(500400, "goods not exist");
     public static CodeMsg GOODS_STOCK_LIMIT = new CodeMsg(500401, "goods sell out");
 
+    //秒杀错误码
+    public static CodeMsg SECKILL_OVER = new CodeMsg(500500, "秒杀已经结束");
+    public static CodeMsg SECKILL_REPEAT = new CodeMsg(500501, "不能重复秒杀");
+    public static CodeMsg REQUEST_ILLEGAL = new CodeMsg(500502, "请求非法");
+    public static CodeMsg SECKILL_FAIL = new CodeMsg(500503, "秒杀失败");
+    public static CodeMsg SECKILL_GOODS_NOT_EXIST = new CodeMsg(500504, "秒杀商品不存在");
+    public static CodeMsg SECKILL_GOODS_OFF_SHELF = new CodeMsg(500505, "商品已下架");
+    public static CodeMsg SECKILL_NOT_START = new CodeMsg(500506, "秒杀尚未开始");
+    public static CodeMsg SECKILL_END = new CodeMsg(500507, "秒杀已经结束");
+
 
     private CodeMsg() {
     }

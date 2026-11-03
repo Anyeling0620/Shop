@@ -45,6 +45,12 @@ spring:
             - Path=/order/**
           filters:
             - StripPrefix=1 # 跳过 order
+        - id: zhuawa_shop_seckill_route
+          uri: lb://seckill
+          predicates:
+            - Path=/seckill/**
+          filters:
+            - StripPrefix=1 # 跳过 seckill，前端请求 /seckill/seckill/**
   redis:
     host: 127.0.0.1
     port: 6379
