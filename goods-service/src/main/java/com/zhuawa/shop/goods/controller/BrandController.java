@@ -19,44 +19,51 @@ public class BrandController {
     @Autowired
     BrandService brandService;
 
-    @ApiOperation(value = "根据id获取品牌")
+    @ApiOperation(value = "根据ID查询品牌详情")
     @GetMapping("/{id}")
     public Result<Brand> getById(@PathVariable("id") long id) {
         return Result.success(brandService.getById(id));
     }
 
+    @ApiOperation(value = "新增品牌")
     @PostMapping("/add")
     public Result<Long> add(@RequestBody Brand brand) {
         return Result.success(brandService.add(brand));
     }
 
+    @ApiOperation(value = "修改品牌")
     @PostMapping("/update")
     public Result<String> update(@RequestBody Brand brand) {
         brandService.update(brand);
         return Result.success("success");
     }
 
+    @ApiOperation(value = "根据ID删除品牌")
     @DeleteMapping("/{id}")
     public Result<String> delete(@PathVariable("id")long id) {
         brandService.deleteById(id);
         return Result.success("success");
     }
 
+    @ApiOperation(value = "按条件查询品牌列表")
     @PostMapping("/search")
     public Result<List<Brand>> search(@RequestBody Brand brand) {
         return Result.success(brandService.searchList(brand));
     }
 
+    @ApiOperation(value = "分页查询品牌列表")
     @GetMapping("/list/{page}/{size}")
     public Result<PageInfo<Brand>> listWithPage(@PathVariable int page, @PathVariable int size) {
         return Result.success(brandService.listWithPage(page, size));
     }
 
+    @ApiOperation(value = "按条件分页查询品牌")
     @PostMapping("/search/{page}/{size}")
     public Result<PageInfo<Brand>> searchWithPage(@RequestBody Brand brand, @PathVariable int page, @PathVariable int size) {
         return Result.success(brandService.searchWithPage(brand, page, size));
     }
 
+    @ApiOperation(value = "根据类目ID查询品牌列表")
     @GetMapping("/listByCategoryId")
     public Result<List<Brand>> listByCategoryId(@RequestParam long categoryId) {
         return Result.success(brandService.listByCategoryId(categoryId));

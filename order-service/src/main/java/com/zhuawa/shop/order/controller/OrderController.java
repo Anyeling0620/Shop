@@ -10,9 +10,13 @@ import com.zhuawa.shop.order.model.Orders;
 import com.zhuawa.shop.order.service.OrderService;
 import com.zhuawa.shop.order.vo.OrderVO;
 import com.zhuawa.shop.order.vo.OrdersParam;
+import io.swagger.annotations.Api;
+import springfox.documentation.annotations.ApiIgnore;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+@Api(tags = "订单模块")
 @RestController
 @RequestMapping("/order")
 public class OrderController {
@@ -20,6 +24,7 @@ public class OrderController {
     @Autowired
     OrderService orderService;
 
+    @ApiOperation(value = "测试接口（ID大于10时返回服务端异常）")
     @GetMapping("/get/{id}")
     public Result<TestVO> testGet(@PathVariable(name = "id")Long id) {
         if (id > 10) {
@@ -28,15 +33,17 @@ public class OrderController {
         return Result.success(new TestVO());
     }
 
+    @ApiOperation(value = "提交订单")
     @PostMapping("/genOrder")
     @AccessLimit
-    public Result<Orders> genOrder(LoginUser user, @RequestBody OrdersParam ordersParam) {
+    public Result<Orders> genOrder(@ApiIgnore LoginUser user, @RequestBody OrdersParam ordersParam) {
         return Result.success(orderService.genOrder(user.getId(), ordersParam));
     }
 
+    @ApiOperation(value = "根据订单ID查询订单详情")
     @GetMapping("/getOrder/{orderId}")
     @AccessLimit
-    public Result<OrderVO> getOrderById(LoginUser user, @PathVariable Long orderId) {
+    public Result<OrderVO> getOrderById(@ApiIgnore LoginUser user, @PathVariable Long orderId) {
         return Result.success(orderService.getOrderById(orderId));
     }
 

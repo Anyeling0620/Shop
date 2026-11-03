@@ -12,6 +12,9 @@ import com.zhuawa.shop.seckill.redis.RedisService;
 import com.zhuawa.shop.seckill.service.SeckillGoodsService;
 import com.zhuawa.shop.seckill.service.SeckillService;
 import com.zhuawa.shop.seckill.vo.SeckillDetailVo;
+import io.swagger.annotations.Api;
+import springfox.documentation.annotations.ApiIgnore;
+import io.swagger.annotations.ApiOperation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +29,7 @@ import javax.annotation.PostConstruct;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
+@Api(tags = "秒杀模块")
 @RestController
 @RequestMapping("/seckill")
 public class SeckillController {
@@ -61,11 +65,13 @@ public class SeckillController {
         logger.info("seckill stock init finish, goods count: {}", goodsList.size());
     }
 
+    @ApiOperation(value = "查询秒杀商品列表")
     @GetMapping("/list")
     public Result<List<SeckillGoods>> list() {
         return Result.success(seckillGoodsService.listSeckillGoods());
     }
 
+    @ApiOperation(value = "查询秒杀商品详情（含秒杀状态与倒计时）")
     @GetMapping("/detail/{goodsId}")
     public Result<SeckillDetailVo> detail(@PathVariable("goodsId") long goodsId) {
         SeckillGoods goods = seckillGoodsService.getByGoodsId(goodsId);
@@ -83,9 +89,10 @@ public class SeckillController {
     /**
      * 获取混淆后的秒杀 path（防脚本刷接口），60s 有效
      */
+    @ApiOperation(value = "获取秒杀隐藏地址（60秒内有效）")
     @AccessLimit(needLogin = true)
     @GetMapping("/path/{goodsId}")
-    public Result<String> getSeckillPath(LoginUser user, @PathVariable("goodsId") long goodsId) {
+    public Result<String> getSeckillPath(@ApiIgnore LoginUser user, @PathVariable("goodsId") long goodsId) {
         if (user == null) {
             return Result.error(CodeMsg.SESSION_ERROR);
         }
@@ -101,9 +108,10 @@ public class SeckillController {
      * 4. redis setnx 判重
      * 5. 发 MQ 异步下单，返回排队中
      */
+    @ApiOperation(value = "执行秒杀（异步下单，返回0表示排队中）")
     @AccessLimit(needLogin = true)
     @PostMapping("/{path}/do/{goodsId}")
-    public Result<Long> doSeckill(LoginUser user,
+    public Result<Long> doSeckill(@ApiIgnore LoginUser user,
                                   @PathVariable("path") String path,
                                   @PathVariable("goodsId") long goodsId) {
         if (user == null) {
@@ -142,8 +150,9 @@ public class SeckillController {
     /**
      * 前端轮询秒杀结果：orderId 成功；-1 失败；0 排队中
      */
+    @ApiOperation(value = "轮询查询秒杀结果（订单ID成功，-1失败，0排队中）")
     @GetMapping("/result/{goodsId}")
-    public Result<Long> seckillResult(LoginUser user, @PathVariable("goodsId") long goodsId) {
+    public Result<Long> seckillResult(@ApiIgnore LoginUser user, @PathVariable("goodsId") long goodsId) {
         if (user == null) {
             return Result.error(CodeMsg.SESSION_ERROR);
         }
@@ -153,6 +162,7 @@ public class SeckillController {
     /**
      * 供其他服务 Feign 调用的结果查询接口（不校验登录态）
      */
+    @ApiOperation(value = "查询秒杀结果（供服务间Feign调用）")
     @GetMapping("/result/query")
     public Result<Long> seckillResultQuery(@RequestParam("userId") long userId,
                                            @RequestParam("goodsId") long goodsId) {

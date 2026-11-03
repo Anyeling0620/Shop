@@ -5,6 +5,7 @@ import com.zhuawa.shop.search.model.SearchGoodsParam;
 import com.zhuawa.shop.search.model.SearchGoodsRes;
 import com.zhuawa.shop.search.service.GoodsService;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,12 +22,14 @@ public class GoodsController {
     @Autowired
     GoodsService goodsService;
 
+    @ApiOperation(value = "将商品数据全量导入Elasticsearch")
     @GetMapping("/exportData2ES")
     public Result<String> exportData2ES() {
         goodsService.exportData2ES();
         return Result.success("导出到ES成功");
     }
 
+    @ApiOperation(value = "分页搜索商品")
     @PostMapping("/search/{page}/{size}")
     public Result<SearchGoodsRes> searchForPage(@PathVariable Integer page,
                                                 @PathVariable Integer size,
