@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>订单详情</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <!-- jquery -->
+  <script type="text/javascript" src="/js/jquery.min.js"></script>
+  <!-- bootstrap -->
+  <link rel="stylesheet" type="text/css" href="/bootstrap/css/bootstrap.min.css" />
+  <script type="text/javascript" src="/bootstrap/js/bootstrap.min.js"></script>
+  <!-- jquery-validator -->
+  <script type="text/javascript" src="/jquery-validation/jquery.validate.min.js"></script>
+  <script type="text/javascript" src="/jquery-validation/localization/messages_zh.min.js"></script>
+  <!-- layer -->
+  <script type="text/javascript" src="/layer/layer.js"></script>
+  <!-- md5.js -->
+  <script type="text/javascript" src="/js/md5.min.js"></script>
+  <!-- common.js -->
+  <script type="text/javascript" src="/js/common.js"></script>
+</head>
+<body>
+<div class="panel panel-default">
+  <div class="panel-heading">
+    订单商品列表
+    <div align="right">
+      <span id="userInfo"></span>
+    </div>
+  </div>
+  <table class="table" id="goodsList">
+    <tr><td>商品名称</td><td>商品图片</td><td>商品数量</td><td>商品总价</td></tr>
+  </table>
+</div>
+
+<div class="panel panel-default">
+  <div class="panel-heading">
+    订单信息
+  </div>
+  <table class="table" id="orderInfo">
+    <tr><td>订单id</td><td id="orderId"></td></tr>
+    <tr><td>订单总价</td><td id="orderPrice"></td></tr>
+    <tr><td>收货地址</td><td id="receiveAddress"></td></tr>
+    <tr><td>支付方式</td><td id="payType"></td></tr>
+    <tr><td>买家留言</td><td id="consumerMsg"></td></tr>
+    <tr><td>订单状态</td><td id="status"></td></tr>
+  </table>
+</div>
+
+</body>
+
+<script>
+
+  $(function(){
+    getOrderDetail();
+    getUserInfo();
+  });
+
+  function getOrderDetail(){
+    var orderId = g_getQueryString("orderId");
+    $.ajax({
+      url:"http://localhost:8081/order/order/getOrder/"+orderId,
+      type:"GET",
+      xhrFields: {
+        withCredentials: true    // 要在这里设置上传cookie
+      },
+      crossDomain: true,
+      success:function(data){
+        if(data.code == 0){
+          render(data.data);
+        }else{
+          layer.msg(data.msg);
+        }
+      },
+      error:function(){
+        layer.msg("客户端请求有误");
+      }
+    });
+  }
+
+  function getUserInfo(){
+    $.ajax({
+      url: "http://localhost:8081/user/user/info",
+      type: "GET",
+      xhrFields: {
+        withCredentials: true    // 要在这里设置上传cookie
+      },
+      crossDomain: true,
+      success:function(data){
+        layer.closeAll();
+        if(data.code == 0){
+          $("#userInfo").text("欢迎您, " + data.data.nickname);
+        }else{
+          layer.msg(data.msg);
+        }
+      },
+      error:function(){
+        layer.closeAll();
+      }
+    });
+  }
+
+  function render(order){
+    $("#orderId").text(order.id);
+    $("#orderPrice").text(order.actualPrice/100);
+    $("#receiveAddress").text(order.receiveAddress);
+    if (order.payType === 0) {
+      $("#payType").text('在线支付');
+    } else {
+      $("#payType").text('货到付款');
+    }
+    $("#consumerMsg").text(order.consumerMsg);
+    if (order.status === 0) {
+      $("#status").text('待支付');
+    } else if (order.status === 1) {
+      $("#status").text('已支付未发货');
+    } else if (order.status === 2) {
+      $("#status").text('已发货');
+    } else if (order.status === 3) {
+      $("#status").text('已收货');
+    } else if (order.status === 4) {
+      $("#status").text('已到账');
+    } else {
+      $("#status").text('已评论');
+    }
+
+    for(var i in order.orderItems) {
+      var trDiv = "<tr>";
+      trDiv += '<td>' +order.orderItems[i].goodsName+ '</td>';
+      trDiv += '<td><img src="'+order.orderItems[i].goodsImage+'" width="100" height="100" /></td>';
+      trDiv += "<td>" + order.orderItems[i].count + "</td>";
+      trDiv += "<td>" + order.orderItems[i].actualPrice/100 + "</td>";
+      trDiv = trDiv + "</tr>";
+      $('#goodsList').append(trDiv);
+    }
+  }
+
+</script>
+</html>

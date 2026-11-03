@@ -1,0 +1,55 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <title>zhuawa shop</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+
+    <!-- jquery -->
+    <script type="text/javascript" src="/js/jquery.min.js"></script>
+    <!-- bootstrap -->
+    <link rel="stylesheet" type="text/css" href="/bootstrap/css/bootstrap.min.css" />
+    <script type="text/javascript" src="/bootstrap/js/bootstrap.min.js"></script>
+    <!-- jquery-validator -->
+    <script type="text/javascript" src="/jquery-validation/jquery.validate.min.js"></script>
+    <script type="text/javascript" src="/jquery-validation/localization/messages_zh.min.js"></script>
+    <!-- layer -->
+    <script type="text/javascript" src="/layer/layer.js"></script>
+    <!-- md5.js -->
+    <script type="text/javascript" src="/js/md5.min.js"></script>
+    <!-- common.js -->
+    <script type="text/javascript" src="/js/common.js"></script>
+
+</head>
+<body>
+userId:
+<p id="userId"></p>
+</body>
+<script>
+$(function(){
+	getUserInfo();
+});
+
+function getUserInfo() {
+    $.ajax({
+        url: "http://localhost:8081/user/user/info",
+        type: "GET",
+        xhrFields: {
+            withCredentials: true    // 要在这里设置上传cookie
+        },
+        crossDomain: true,
+        success:function(data){
+            layer.closeAll();
+            if(data.code == 0){
+                layer.msg("成功");
+                $("#userId").text(data.data.id);
+            }else{
+                layer.msg(data.msg);
+            }
+        },
+        error:function(){
+            layer.closeAll();
+        }
+	});
+}
+</script>
+</html>

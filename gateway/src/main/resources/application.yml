@@ -1,0 +1,63 @@
+server:
+  port: 8081
+spring:
+  application:
+    name: gateway
+  cloud:
+    gateway:
+      globalcors:
+        corsConfigurations:
+          '[/**]': # 匹配所有请求
+            # 设置允许的域名
+            allowedOrigins:
+              - "http://localhost:18004"
+            # 允许所有头信息
+            allowedHeaders: "*"
+            # 设置允许携带cookie
+            # 为true时allowedOrigins不允许为* 会报错
+            allowCredentials: true
+            allowedMethods: # 支持的方法
+              - GET
+              - POST
+              - PUT
+              - DELETE
+      routes:
+        - id: zhuawa_shop_goods_route
+          uri: http://localhost:18001
+          predicates:
+          - Path=/goods/**
+          filters:
+          - StripPrefix=1 # 跳过 goods
+          - name: RequestRateLimiter #请求数限流 名字不能随便写 ，使用默认的factory
+            args:
+              key-resolver: "#{@ipKeyResolver}"
+              redis-rate-limiter.replenishRate: 1 # 允许用户每秒处理多少个请求
+              redis-rate-limiter.burstCapacity: 5 # 令牌桶的容量，允许在一秒钟内完成的最大请求数
+        - id: zhuawa_shop_user_route
+          uri: http://localhost:18006
+          predicates:
+            - Path=/user/**
+          filters:
+            - StripPrefix=1 # 跳过 users
+        - id: zhuawa_shop_order_route
+          uri: lb://order
+          predicates:
+            - Path=/order/**
+          filters:
+            - StripPrefix=1 # 跳过 order
+  redis:
+    host: 127.0.0.1
+    port: 6379
+    password: 12345678
+
+auth:
+  skip:
+    urls: http://localhost:8081/user/user/login/do_login
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://127.0.0.1:8761/eureka
+feign:
+  hystrix:
+    enabled: true

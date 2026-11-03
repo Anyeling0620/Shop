@@ -1,0 +1,64 @@
+<!DOCTYPE HTML>
+<html >
+<head>
+    <title>添加商品</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <!-- jquery -->
+    <script type="text/javascript" src="/js/jquery.min.js"></script>
+    <!-- bootstrap -->
+    <link rel="stylesheet" type="text/css" href="/bootstrap/css/bootstrap.min.css" />
+    <script type="text/javascript" src="/bootstrap/js/bootstrap.min.js"></script>
+    <!-- jquery-validator -->
+    <script type="text/javascript" src="/jquery-validation/jquery.validate.min.js"></script>
+    <script type="text/javascript" src="/jquery-validation/localization/messages_zh.min.js"></script>
+    <!-- layer -->
+    <script type="text/javascript" src="/layer/layer.js"></script>
+    <!-- md5.js -->
+    <script type="text/javascript" src="/js/md5.min.js"></script>
+    <!-- common.js -->
+    <script type="text/javascript" src="/js/common.js"></script>
+    <!-- self js -->
+    <script type="text/javascript" src="/js/add_goods.js"></script>
+</head>
+
+<body>
+<div class="panel panel-default">
+    <div class="panel-heading">添加商品</div>
+    <div>选择商品类目:</div>
+    <form class="form-horizontal" role="form">
+        <div class="form-group">
+            <label for="category1" class="col-lg-2 control-label">一级类目</label>
+            <div class="col-lg-10">
+                <select id="category1" class="selectpicker show-tick form-control bs-select-hidden">
+
+                </select>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="category2" class="col-lg-2 control-label">二级类目</label>
+            <div class="col-lg-10">
+                <select id="category2" class="selectpicker show-tick form-control bs-select-hidden">
+                </select>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="category3" class="col-lg-2 control-label">三级类目</label>
+            <div class="col-lg-10">
+                <select id="category3" class="selectpicker show-tick form-control bs-select-hidden">
+                </select>
+            </div>
+        </div>
+    </form>
+    <form>
+        <div>选择商品品牌:</div>
+        <div class="form-group">
+            <label for="brand" class="col-lg-2 control-label">品牌</label>
+            <div class="col-lg-10">
+                <select id="brand" class="selectpicker show-tick form-control bs-select-hidden">
+                </select>
+            </div>
+        </div>
+    </form>
+</div>
+</body>
+</html>

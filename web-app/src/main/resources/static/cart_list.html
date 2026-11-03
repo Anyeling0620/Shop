@@ -1,0 +1,173 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <title>购物车</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <!-- jquery -->
+    <script type="text/javascript" src="/js/jquery.min.js"></script>
+    <!-- bootstrap -->
+    <link rel="stylesheet" type="text/css" href="/bootstrap/css/bootstrap.min.css" />
+    <script type="text/javascript" src="/bootstrap/js/bootstrap.min.js"></script>
+    <!-- jquery-validator -->
+    <script type="text/javascript" src="/jquery-validation/jquery.validate.min.js"></script>
+    <script type="text/javascript" src="/jquery-validation/localization/messages_zh.min.js"></script>
+    <!-- layer -->
+    <script type="text/javascript" src="/layer/layer.js"></script>
+    <!-- md5.js -->
+    <script type="text/javascript" src="/js/md5.min.js"></script>
+    <!-- common.js -->
+    <script type="text/javascript" src="/js/common.js"></script>
+</head>
+<body>
+
+<div class="panel panel-default">
+    <div class="panel-heading">
+        购物车
+        <div align="right">
+            <span id="userInfo"></span>
+        </div>
+    </div>
+    <table class="table" id="cartList">
+        <tr><td>选择</td><td>商品名称</td><td>商品图片</td><td>商品价格</td><td>商品数量</td><td>商品总价</td></tr>
+    </table>
+</div>
+<div style="text-align: right;">
+    <button style="margin-right: 20px;" class="btn btn-primary btn-lg" data-toggle="modal" data-target="#myModal">结算</button>
+</div>
+<!-- 模态框（Modal） -->
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title" id="myModalLabel">订单信息填写</h4>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="receiveAddress">收货地址</label>
+                    <input type="text" class="form-control" id="receiveAddress" required="true" placeholder="请输入收货地址">
+                </div>
+                <div class="form-group">
+                    <label for="payType">支付方式</label>
+                    <label class="radio-inline">
+                        <input type="radio"  value="0" name="payType" checked="true">在线支付
+                    </label>
+                    <label class="radio-inline">
+                        <input type="radio"  value="1" name="payType">货到付款
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label for="comment">买家留言</label>
+                    <input type="text" class="form-control" id="comment" placeholder="请输入留言">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" onclick="genOrder()">确认</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal -->
+</div>
+
+</body>
+<script>
+$(function(){
+	getUserInfo();
+	getCartList();
+});
+function getUserInfo(){
+    $.ajax({
+        url: "http://localhost:8081/user/user/info",
+        type: "GET",
+        xhrFields: {
+            withCredentials: true    // 要在这里设置上传cookie
+        },
+        crossDomain: true,
+        success:function(data){
+            layer.closeAll();
+            if(data.code == 0){
+                $("#userInfo").text("欢迎您, " + data.data.nickname);
+            }else{
+                layer.msg(data.msg);
+            }
+        },
+        error:function(){
+            layer.closeAll();
+        }
+	});
+}
+function getCartList(){
+    $.ajax({
+        url: "http://localhost:8081/order/cart/list",
+        type: "GET",
+        xhrFields: {
+            withCredentials: true    // 要在这里设置上传cookie
+        },
+        crossDomain: true,
+        success:function(data){
+            layer.closeAll();
+            if(data.code == 0){
+                render(data.data);
+            }else{
+                layer.msg(data.msg);
+            }
+        },
+        error:function(){
+            layer.closeAll();
+        }
+	});
+}
+function render(cartList) {
+    for(var i in cartList) {
+        var trDiv = "<tr>";
+        trDiv += '<td><input type="checkbox" value="'+cartList[i].itemId+'"/></td>'
+        trDiv += "<td>" + cartList[i].title + "</td>";
+        trDiv += '<td><img src="'+cartList[i].image+'" width="100" height="100" /></td>';
+        trDiv += "<td>" + cartList[i].priceNow/100 + "</td>";
+        trDiv += "<td>" + cartList[i].count + "</td>";
+        trDiv += "<td>" + cartList[i].totalPriceNow/100 + "</td>";
+        trDiv = trDiv + "</tr>";
+        $('#cartList').append(trDiv);
+    }
+}
+function genOrder(){
+    var cartItemIds = [];
+    var param = {
+        "receiveAddress": $('#receiveAddress').val(),
+        "payType": $('input:radio:checked').val(),
+        "consumerMsg": $('#comment').val()
+    };
+    $(":checkbox").each(function(){
+        if(this.checked == true){
+            console.log(this.value);
+            cartItemIds.push(this.value);
+        }
+    })
+    param['cartItemIds'] = cartItemIds;
+    console.log(param);
+    $.ajax({
+            url: "http://localhost:8081/order/order/genOrder",
+            type:"POST",
+            contentType: "application/json",
+            dataType:"json",
+            data: JSON.stringify(param),
+            xhrFields: {
+                withCredentials: true    // 要在这里设置上传cookie
+            },
+            crossDomain: true,
+            success:function(data){
+                if(data.code == 0){
+                    console.log(data.data);
+                    //TODO 关闭model ， 跳转到订单详情页
+                    location.href="order_detail.html?orderId="+data.data.id;
+                }else{
+                    layer.msg(data.msg);
+                }
+            },
+            error:function(){
+                layer.msg("客户端请求有误");
+            }
+        });
+}
+</script>
+</html>

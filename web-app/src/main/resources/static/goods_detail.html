@@ -1,0 +1,184 @@
+<!DOCTYPE HTML>
+<html >
+<head>
+    <title>商品详情</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <!-- jquery -->
+    <script type="text/javascript" src="/js/jquery.min.js"></script>
+    <!-- bootstrap -->
+    <link rel="stylesheet" type="text/css" href="/bootstrap/css/bootstrap.min.css" />
+    <script type="text/javascript" src="/bootstrap/js/bootstrap.min.js"></script>
+    <!-- jquery-validator -->
+    <script type="text/javascript" src="/jquery-validation/jquery.validate.min.js"></script>
+    <script type="text/javascript" src="/jquery-validation/localization/messages_zh.min.js"></script>
+    <!-- layer -->
+    <script type="text/javascript" src="/layer/layer.js"></script>
+    <!-- md5.js -->
+    <script type="text/javascript" src="/js/md5.min.js"></script>
+    <!-- common.js -->
+    <script type="text/javascript" src="/js/common.js"></script>
+</head>
+<body>
+
+<div class="panel panel-default">
+  <div class="panel-heading">
+      商品详情
+      <div align="right">
+          <span id="userInfo"></span>
+      </div>
+  </div>
+
+  <table class="table" id="goodslist">
+  	<tr>  
+        <td>商品名称</td>  
+        <td colspan="3" id="goodsName"></td> 
+     </tr>
+      <tr>
+          <td>商品价格</td>
+          <td colspan="3" id="goodsPrice"></td>
+      </tr>
+      <tr>
+          <td>商品库存</td>
+          <td colspan="3"  id="stockCount"></td>
+      </tr>
+      <tr>
+          <td>商品图片</td>
+          <td colspan="3"><img  id="goodsImg" width="200" height="200" /></td>
+      </tr>
+      <tr>
+          <td>商品品牌</td>
+          <td colspan="3"  id="brand"></td>
+      </tr>
+      <tr>
+          <td>商品类别</td>
+          <td colspan="3"  id="category"></td>
+      </tr>
+     <tr>
+        <td>
+            操作：
+        </td>
+         <td>
+             <div class="row">
+                 <div class="form-inline">
+<!--                     <button class="btn btn-primary" type="button" id="buyButton"onclick="buy()">立即购买</button>-->
+                     <button class="btn btn-primary" type="button" id="addCartButton"onclick="addToCart()">加入购物车</button>
+                 </div>
+             </div>
+             <input type="hidden" name="goodsId"  id="goodsId" />
+         </td>
+     </tr>
+  </table>
+</div>
+</body>
+<script>
+
+$(function(){
+	getGoodsDetail();
+	getUserInfo();
+});
+
+function getGoodsDetail(){
+	var goodsId = g_getQueryString("goodsId");
+	$.ajax({
+		url:"http://localhost:8081/goods/goods/get/"+goodsId,
+		type:"GET",
+		xhrFields: {
+            withCredentials: true    // 要在这里设置上传cookie
+        },
+        crossDomain: true,
+		success:function(data){
+			if(data.code == 0){
+				render(data.data);
+			}else{
+				layer.msg(data.msg);
+			}
+		},
+		error:function(){
+			layer.msg("客户端请求有误");
+		}
+	});
+}
+
+function getUserInfo(){
+    $.ajax({
+        url: "http://localhost:8081/user/user/info",
+        type: "GET",
+        xhrFields: {
+            withCredentials: true    // 要在这里设置上传cookie
+        },
+        crossDomain: true,
+        success:function(data){
+            layer.closeAll();
+            if(data.code == 0){
+                $("#userInfo").text("欢迎您, " + data.data.nickname);
+            }else{
+                layer.msg(data.msg);
+            }
+        },
+        error:function(){
+            layer.closeAll();
+        }
+	});
+}
+
+function render(goods){
+	$("#goodsName").text(goods.name);
+	$("#goodsPrice").text(goods.price/100);
+	$("#stockCount").text(goods.stock);
+	$("#goodsImg").attr("src", goods.image);
+	$("#brand").text(goods.brandName);
+	$("#category").text(goods.categoryName);
+	$("#goodsId").val(goods.id);
+}
+
+function buy(){
+	g_showLoading();
+	$.ajax({
+		url:"http://localhost:8081/order/order/genOrder",
+		type:"POST",
+		data:{
+			goodsId: g_getQueryString("goodsId"),
+		},
+		xhrFields: {
+            withCredentials: true    // 要在这里设置上传cookie
+        },
+        crossDomain: true,
+		success:function(data){
+			if(data.code == 0){
+				window.location.href="/order_detail.html?orderId="+data.data.id;
+			}else{
+				layer.msg(data.msg);
+			}
+		},
+		error:function(){
+			layer.msg("客户端请求有误");
+		}
+	});
+
+}
+
+function addToCart(){
+	var goodsId = g_getQueryString("goodsId");
+	$.ajax({
+        url: "http://localhost:8081/order/cart/incr?goodsId="+goodsId,
+        type: "GET",
+        xhrFields: {
+            withCredentials: true    // 要在这里设置上传cookie
+        },
+        crossDomain: true,
+        success:function(data){
+            layer.closeAll();
+            if(data.code == 0){
+                layer.msg("加购成功!");
+            }else{
+                layer.msg(data.msg);
+            }
+        },
+        error:function(){
+            layer.closeAll();
+        }
+	});
+}
+
+</script>
+</html>

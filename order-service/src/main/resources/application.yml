@@ -1,0 +1,38 @@
+server:
+  port: 18002
+spring:
+  application:
+    name: order
+  datasource:
+    driver-class-name: com.mysql.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/order?useUnicode=true&characterEncoding=utf-8&allowMultiQueries=true&useSSL=false&serverTimezone=Asia/Shanghai
+    username: root
+    password: 12345678
+    type: com.alibaba.druid.pool.DruidDataSource
+    filters: stat
+    maxActive: 1000 # 指定连接池中最大的活跃连接数
+    initialSize: 100 # 指定启动连接池时，初始建立的连接数量
+    maxWait: 60000 # 指定连接池等待连接返回的最大等待时间，毫秒单位
+    minIdle: 500
+    timeBetweenEvictionRunsMillis: 60000
+    minEvictableIdleTimeMillis: 300000
+    validationQuery: select 1
+    testWhileIdle: true
+    testOnBorrow: false
+    testOnReturn: false
+    poolPreparedStatements: true
+    maxOpenPreparedStatements: 20
+eureka:
+  client:
+    service-url:
+      defaultZone: http://127.0.0.1:8761/eureka
+feign:
+  hystrix:
+    enabled: true
+mybatis:
+  configuration:
+    map-underscore-to-camel-case: true
+    default-fetch-size: 100
+    default-statement-timeout: 3000
+  mapper-locations: classpath:mapper/*Mapper.xml
+  type-aliases-package: com.zhuawa.shop.order.model

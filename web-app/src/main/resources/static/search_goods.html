@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>搜索商品</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <!-- jquery -->
+    <script type="text/javascript" src="/js/jquery.min.js"></script>
+    <!-- bootstrap -->
+    <link rel="stylesheet" type="text/css" href="/bootstrap/css/bootstrap.min.css" />
+    <script type="text/javascript" src="/bootstrap/js/bootstrap.min.js"></script>
+    <!-- jquery-validator -->
+    <script type="text/javascript" src="/jquery-validation/jquery.validate.min.js"></script>
+    <script type="text/javascript" src="/jquery-validation/localization/messages_zh.min.js"></script>
+    <!-- layer -->
+    <script type="text/javascript" src="/layer/layer.js"></script>
+    <!-- md5.js -->
+    <script type="text/javascript" src="/js/md5.min.js"></script>
+    <!-- common.js -->
+    <script type="text/javascript" src="/js/common.js"></script>
+    <!-- self js -->
+    <script type="text/javascript" src="/js/search_goods.js"></script>
+</head>
+<body>
+<div style="margin-top:20px;margin-left:20px;">
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="input-group">
+                <input id="key" type="text" class="form-control" placeholder="输入关键词搜索...">
+                <span class="input-group-btn">
+        <button class="btn btn-default" type="button" onclick="search()">搜索</button>
+      </span>
+            </div>
+        </div>
+    </div>
+    <div>
+        <h4 id="filters">
+        </h4>
+    </div>
+    <div style="display: none" id="categoryList">
+        <h4>类目: </h4>
+    </div>
+    <div style="display:none" id="brandList">
+        <h4>品牌: </h4>
+    </div>
+    <div id="specsList">
+
+    </div>
+    <div class="row">
+        <div class="form-inline">
+            <h4>价格区间：</h4>
+            <input id="minPrice" type="text" class="form-control" style="width:10%" placeholder="最低价格">
+            <input id="maxPrice" type="text" class="form-control" style="width:10%" placeholder="最高价格">
+            <button type="button" class="btn btn-default" onclick="searchByPrice()">确定</button>
+        </div>
+    </div>
+    <div>
+        <h4>排序: </h4>
+        <a onclick="searchByOrder()">价格</a>
+    </div>
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            商品列表
+        </div>
+        <table class="table" id="goodsList">
+            <tr><td>商品名称</td><td>商品分类</td><td>商品品牌</td><td>商品图片</td><td>商品价格</td><td>库存数量</td></tr>
+        </table>
+    </div>
+
+    <nav aria-label="Page navigation">
+        <ul class="pagination" id="pages">
+
+        </ul>
+    </nav>
+</div>
+
+</body>
+</html>
