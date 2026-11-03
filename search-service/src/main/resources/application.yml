@@ -5,12 +5,12 @@ spring:
     name: search
   main:
     allow-bean-definition-overriding: true
-  data:
-    elasticsearch:
-      cluster-name: my-application
-      cluster-nodes: 127.0.0.1:9300
+  elasticsearch:
+    rest:
+      # Spring Data ES 4.x 只用 REST 客户端（9200），cluster-name / cluster-nodes(9300) 已废弃
+      uris: http://10.217.238.17:9200
   rabbitmq:
-    host: localhost
+    host: 10.217.238.17
     port: 5672
     username: guest
     password: guest

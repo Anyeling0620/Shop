@@ -5,29 +5,18 @@ spring:
     name: seckill
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/seckill?useUnicode=true&characterEncoding=utf-8&allowMultiQueries=true&useSSL=false&serverTimezone=Asia/Shanghai
+    url: jdbc:mysql://10.217.238.17:13306/seckill?useUnicode=true&characterEncoding=utf-8&allowMultiQueries=true&useSSL=false&serverTimezone=Asia/Shanghai
     username: root
     password: 12345678
     type: com.alibaba.druid.pool.DruidDataSource
-    filters: stat
-    maxActive: 1000
-    initialSize: 100
-    maxWait: 60000
-    minIdle: 500
-    timeBetweenEvictionRunsMillis: 60000
-    minEvictableIdleTimeMillis: 300000
-    validationQuery: select 1
-    testWhileIdle: true
-    testOnBorrow: false
-    testOnReturn: false
-    poolPreparedStatements: true
-    maxOpenPreparedStatements: 20
+    # 连接池参数请写在 spring.datasource.druid.* 下并引入 druid-spring-boot-starter，
+    # 仅依赖 druid 时 spring.datasource.* 不会绑定任何池参数（Druid 走自身默认值）
   redis:
-    host: 127.0.0.1
-    port: 6379
+    host: 10.217.238.17
+    port: 16379
     password: 12345678
   rabbitmq:
-    host: 127.0.0.1
+    host: 10.217.238.17
     port: 5672
     username: guest
     password: guest

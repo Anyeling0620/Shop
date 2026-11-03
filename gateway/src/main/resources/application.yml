@@ -52,8 +52,8 @@ spring:
           filters:
             - StripPrefix=1 # 跳过 seckill，前端请求 /seckill/seckill/**
   redis:
-    host: 127.0.0.1
-    port: 6379
+    host: 10.217.238.17
+    port: 16379
     password: 12345678
 
 auth:

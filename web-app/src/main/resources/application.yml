@@ -3,11 +3,11 @@ server:
 spring:
   application:
     name: web-app
-  resources:
-    static-locations: classpath:/static/
-    chain:
-      enabled: true
-      html-application-cache: false
+  web:
+    resources:
+      static-locations: classpath:/static/
+      chain:
+        enabled: true
 eureka:
   client:
     service-url:

@@ -1,0 +1,20 @@
+{
+  "properties": [
+    {
+      "name": "auth.skip.urls",
+      "type": "java.util.List<java.lang.String>",
+      "description": "免登录白名单：命中这些完整 URL 的请求由 AuthFilter 直接放行，多个用英文逗号分隔。"
+    }
+  ],
+  "hints": [
+    {
+      "name": "auth.skip.urls",
+      "values": [
+        {
+          "value": "http://localhost:8081/user/user/login/do_login",
+          "description": "登录接口（前端直连网关调用）"
+        }
+      ]
+    }
+  ]
+}
