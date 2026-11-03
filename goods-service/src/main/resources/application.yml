@@ -38,9 +38,6 @@ eureka:
       defaultZone: http://127.0.0.1:8761/eureka
   instance:
     status-page-url: http://localhost:18001/doc.html
-feign:
-  hystrix:
-    enabled: true
 mybatis:
   configuration:
     map-underscore-to-camel-case: true

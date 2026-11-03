@@ -20,7 +20,7 @@ public class MysqlListener {
     @Autowired
     MQSender sender;
 
-    @ListenPoint(destination = "example", schema = "goods", table = {"goods"}, eventType = {CanalEntry.EventType.UPDATE, CanalEntry.EventType.INSERT, CanalEntry.EventType.DELETE})
+    @ListenPoint(destination = "shop", schema = "goods", table = {"goods"}, eventType = {CanalEntry.EventType.UPDATE, CanalEntry.EventType.INSERT, CanalEntry.EventType.DELETE})
     public void onGoodsUpdate(CanalEntry.EventType eventType, CanalEntry.RowData rowData) {
         if (eventType == CanalEntry.EventType.DELETE) {
             // 删除记录

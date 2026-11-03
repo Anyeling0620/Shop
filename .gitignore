@@ -1,4 +1,8 @@
 .idea/
+.workbuddy/
+.dsh/
+.claude/
+.codex/
 *.iml
 target/
 logs/

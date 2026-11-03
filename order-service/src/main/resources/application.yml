@@ -26,9 +26,8 @@ eureka:
   client:
     service-url:
       defaultZone: http://127.0.0.1:8761/eureka
-feign:
-  hystrix:
-    enabled: true
+  instance:
+    status-page-url: http://localhost:18002/doc.html
 mybatis:
   configuration:
     map-underscore-to-camel-case: true
