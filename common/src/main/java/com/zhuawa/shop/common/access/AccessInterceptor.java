@@ -1,11 +1,10 @@
-package com.zhuawa.shop.order.access;
+package com.zhuawa.shop.common.access;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.zhuawa.shop.common.result.CodeMsg;
 import com.zhuawa.shop.common.result.Result;
-import com.zhuawa.shop.order.utils.JwtUtil;
-import com.zhuawa.shop.order.vo.User;
+import com.zhuawa.shop.common.utils.JwtUtil;
 import io.jsonwebtoken.Claims;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,7 +12,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
 
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.OutputStream;
@@ -26,9 +24,8 @@ public class AccessInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
             throws Exception {
-        logger.info("-------------------------preHandler-------------------------");
         if (handler instanceof HandlerMethod) {
-            User user = getUser(request, response);
+            LoginUser user = getUser(request);
             // 向当前访问的线程里保存user， 用于UserArgumentResolver 直接获取（同一个请求，同一个线程）
             // 先执行 拦截器， 再执行 UserArgumentResolver
             UserContext.setUser(user);
@@ -48,6 +45,13 @@ public class AccessInterceptor implements HandlerInterceptor {
         return true;
     }
 
+    @Override
+    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler,
+                                Exception ex) {
+        // 清理线程变量，避免线程池复用导致的串号
+        UserContext.clear();
+    }
+
     private void render(HttpServletResponse response, CodeMsg cm) throws Exception {
         response.setContentType("application/json;charset=UTF-8");
         OutputStream out = response.getOutputStream();
@@ -57,15 +61,14 @@ public class AccessInterceptor implements HandlerInterceptor {
         out.close();
     }
 
-    private User getUser(HttpServletRequest request, HttpServletResponse response) {
+    private LoginUser getUser(HttpServletRequest request) {
         String token = request.getHeader(JwtUtil.COOKIE_NAME_TOKEN);
-        Claims claims = null;
+        Claims claims;
         try {
             claims = JwtUtil.parseJWT(token);
             JSONObject userInfo = (JSONObject) JSONObject.parse(claims.getSubject());
-            return new User(userInfo);
+            return new LoginUser(userInfo);
         } catch (Exception e) {
-            logger.error("jwt parse error: ", e);
             return null;
         }
     }

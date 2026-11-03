@@ -1,19 +1,21 @@
-package com.zhuawa.shop.order.vo;
+package com.zhuawa.shop.common.access;
 
 import com.alibaba.fastjson.JSONObject;
-import io.swagger.models.auth.In;
 
-public class User {
+/**
+ * 登录用户信息（由 JWT 解析而来），供各服务通用
+ */
+public class LoginUser {
     private int id;
     private String mobile;
     private String avatar;
     private String nickname;
 
-    public User() {
+    public LoginUser() {
 
     }
 
-    public User(JSONObject userInfo) {
+    public LoginUser(JSONObject userInfo) {
         this.id = (Integer) userInfo.get("id");
         this.nickname = userInfo.getString("nickname");
         this.avatar = userInfo.getString("avatar");

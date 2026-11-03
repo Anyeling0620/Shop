@@ -1,4 +1,4 @@
-package com.zhuawa.shop.order.access;
+package com.zhuawa.shop.common.access;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;

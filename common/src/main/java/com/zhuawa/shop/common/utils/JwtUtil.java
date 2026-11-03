@@ -1,4 +1,4 @@
-package com.zhuawa.shop.order.utils;
+package com.zhuawa.shop.common.utils;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtBuilder;
@@ -80,16 +80,5 @@ public class JwtUtil {
                 .setSigningKey(secretKey)
                 .parseClaimsJws(jwt)
                 .getBody();
-    }
-
-    public static void main(String[] args) {
-        String jwt = JwtUtil.createJWT("nuoya", "", null);
-        System.out.println(jwt);
-        try {
-            Claims claims = JwtUtil.parseJWT(jwt);
-            System.out.println(claims);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 }

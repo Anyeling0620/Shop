@@ -1,6 +1,7 @@
 package com.zhuawa.shop.order.config;
 
-import com.zhuawa.shop.order.access.AccessInterceptor;
+import com.zhuawa.shop.common.access.AccessInterceptor;
+import com.zhuawa.shop.common.access.UserArgumentResolver;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
