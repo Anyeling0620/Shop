@@ -1,11 +1,11 @@
-server:
+﻿server:
   port: 18002
 spring:
   application:
     name: order
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://10.217.238.17:13306/order?useUnicode=true&characterEncoding=utf-8&allowMultiQueries=true&useSSL=false&serverTimezone=Asia/Shanghai
+    url: jdbc:mysql://127.0.0.1:13306/order?useUnicode=true&characterEncoding=utf-8&allowMultiQueries=true&useSSL=false&serverTimezone=Asia/Shanghai
     username: root
     password: 12345678
     type: com.alibaba.druid.pool.DruidDataSource

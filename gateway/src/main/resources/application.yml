@@ -1,4 +1,4 @@
-server:
+﻿server:
   port: 8081
 spring:
   application:
@@ -58,7 +58,7 @@ spring:
           filters:
             - StripPrefix=1 # 跳过 search，前端请求 /search/goods/search/{page}/{size}
   redis:
-    host: 10.217.238.17
+    host: 127.0.0.1
     port: 16379
     password: 12345678
 
