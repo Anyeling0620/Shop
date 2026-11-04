@@ -239,13 +239,181 @@ body {
   align-items: center;
   gap: 22px;
   flex: 1 1 auto;
+  min-width: 0;
+  height: 100%;
+  position: relative;
+  /* 21 个一级类目装不下一行，必须能横向滚动，否则末尾几个类目跑到视口外点不到。
+     弹出面板用 position:fixed 定位，所以这里的 overflow 不会裁掉它。 */
   overflow-x: auto;
+  overflow-y: hidden;
   scrollbar-width: none;
+}
+
+/* CategoryNav 内部的单行容器：真正把「全部 + 各一级类目」排成一行 */
+.category-nav__root {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  flex: 0 0 auto;
   height: 100%;
 }
 
 .category-nav::-webkit-scrollbar {
   display: none;
+}
+
+/* 单个一级分类：hover 面板的定位容器 */
+.category-nav__item {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  height: 100%;
+}
+
+/* ===== 一级分类悬停面板：在触发器正下方弹出，更深层级向右下钻 =====
+   面板挂在父项内部，但用 position: fixed 定位（left/top 由 CategoryNav 实测给出），
+   这样既不会被 .category-nav 的横向 overflow 裁掉，也不会盖住被悬停的父项。 */
+.cat-panel {
+  position: fixed;
+  z-index: 120;
+  display: flex;
+  align-items: stretch;
+  /* 多列总宽不得超出视口 */
+  max-width: calc(100vw - 16px);
+  background: #fff;
+  border: 1px solid var(--line);
+  border-top: 2px solid var(--brand);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.12);
+  /* 列多到超出视口（极窄屏幕 + 4 级下钻）时允许横向滚动，保证最深一级仍点得到；
+     纵向交给每列自己滚动。 */
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+}
+
+/* 单列：宽度有下限，别把中文子类挤成竖排；列内纵向滚动 */
+.cat-panel__col {
+  display: flex;
+  flex-direction: column;
+  flex: 0 0 auto;
+  width: 208px;
+  min-width: 200px;
+  max-width: 280px;
+  /* 两边留 1px，避免相邻列边框重叠成 2px */
+  min-height: 0;
+  max-height: inherit;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 6px 0;
+  background: #fff;
+  scrollbar-width: thin;
+}
+
+/* 列之间的竖向分隔线 */
+.cat-panel__col + .cat-panel__col {
+  border-left: 1px solid var(--line);
+}
+
+.cat-panel__col::-webkit-scrollbar {
+  width: 6px;
+}
+
+.cat-panel__col::-webkit-scrollbar-thumb {
+  background: var(--line-strong);
+  border-radius: 3px;
+}
+
+/* 层级标题：当前这一列属于哪个分类 */
+.cat-panel__title {
+  flex: 0 0 auto;
+  padding: 6px 16px 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-3);
+  letter-spacing: 0.04em;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cat-panel__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.cat-panel__row {
+  list-style: none;
+}
+
+/* 行内两种形态共用：<Link>（叶子）与 <button>（父分类） */
+.cat-panel__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-family: inherit;
+  line-height: 1.4;
+  text-align: left;
+  color: var(--ink-2);
+  background: none;
+  border: 0;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+
+.cat-panel__item:hover,
+.cat-panel__item:focus-visible,
+.cat-panel__item[data-active='true'] {
+  background: var(--brand-soft);
+  color: var(--brand);
+  outline: none;
+}
+
+.cat-panel__item:focus-visible {
+  box-shadow: inset 0 0 0 1px var(--brand);
+}
+
+.cat-panel__arrow {
+  flex: 0 0 auto;
+  color: var(--ink-3);
+  font-size: 13px;
+}
+
+.cat-panel__item:hover .cat-panel__arrow,
+.cat-panel__item[data-active='true'] .cat-panel__arrow {
+  color: var(--brand);
+}
+
+/* 第一列顶部不再有「查看全部<父分类>」入口：触发器本身就是该父分类的链接 */
+
+/* 未判定完成的行：灰字 + 省略号，明确区别于可跳转项 */
+.cat-panel__item[data-pending='true'] {
+  color: var(--ink-3);
+  cursor: progress;
+}
+
+.cat-panel__item[data-pending='true'] .cat-panel__arrow {
+  opacity: 0.45;
+  font-size: 11px;
+}
+
+.cat-panel__hint {
+  padding: 8px 16px;
+  font-size: 12px;
+  color: var(--ink-3);
+}
+
+/* 触发器贴近视口底部时整体向上翻（left/top 由 JS 实测决定） */
+.cat-panel[data-placement='top'] {
+  border-top: 0;
+  border-bottom: 2px solid var(--brand);
 }
 
 .category-nav__link {
@@ -255,6 +423,32 @@ body {
   padding: 4px 0;
   border-bottom: 2px solid transparent;
   transition: color 0.15s ease;
+}
+
+/* 一级分类触发器现在是 <Link>（点击 = 查看该父类全部商品）；
+   面板里的父级子分类仍是 <button>，这里一并清掉浏览器默认外观 */
+button.category-nav__link,
+a.category-nav__link {
+  font-family: inherit;
+  line-height: 1.5;
+  background: none;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+}
+
+button.category-nav__link:focus-visible,
+a.category-nav__link:focus-visible {
+  color: var(--brand);
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+
+/* 面板展开时，触发它的分类保持高亮，指明当前所在分支 */
+button.category-nav__link[aria-expanded='true'],
+a.category-nav__link[aria-expanded='true'] {
+  color: var(--brand);
+  border-bottom-color: var(--brand);
 }
 
 .category-nav__link:hover {
@@ -367,7 +561,8 @@ body {
   .site-header__inner {
     gap: 16px;
   }
-  .category-nav {
+  .category-nav,
+  .category-nav__root {
     gap: 16px;
   }
   .header-search input {
@@ -402,19 +597,200 @@ body {
   border-radius: 3px;
 }
 
-.hero__cat-item {
+/* 首页海报区左侧分类栏：沿用 .hero__cats 作为外层滚动容器，
+   内部项改用 .hero-cats* 命名（组件 HeroCategoryNav）。 */
+.hero-cats {
   display: flex;
+  flex-direction: column;
+}
+
+/* 单个一级分类：悬停面板的锚点，位置由 JS 实测 */
+.hero-cats__term {
+  position: relative;
+  display: flex;
+}
+
+.hero-cats__item {
+  display: flex;
+  align-items: center;
   justify-content: space-between;
   gap: 8px;
+  width: 100%;
   padding: 7px 16px;
+  font-size: 13px;
+  font-family: inherit;
+  line-height: 1.6;
+  text-align: left;
+  color: var(--ink);
+  background: none;
+  border: 0;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+
+.hero-cats__item:hover,
+.hero-cats__item:focus-visible,
+.hero-cats__item[data-active='true'] {
+  background: var(--bg-3);
+  color: var(--brand);
+  outline: none;
+}
+
+.hero-cats__item:focus-visible {
+  box-shadow: inset 0 0 0 1px var(--brand);
+}
+
+.hero-cats__caret {
+  flex: 0 0 auto;
+  color: var(--ink-3);
+}
+
+.hero-cats__item:hover .hero-cats__caret,
+.hero-cats__item[data-active='true'] .hero-cats__caret {
+  color: var(--brand);
+}
+
+/* ===== 级联面板：贴一级分类右边缘向右展开（省/市/区） =====
+   用 position: fixed，因为 .hero__cats 是 overflow-y: auto 的滚动容器，
+   absolute 会被它纵向裁掉。祖先链（.container / .hero / aside）上没有
+   transform / filter / will-change / contain，fixed 不会退化成相对祖先定位。 */
+.hero-cats__flyout {
+  position: fixed;
+  z-index: 130;
+  display: flex;
+  align-items: stretch;
+  /* 多列总宽不得超出视口 */
+  max-width: calc(100vw - 16px);
+  background: #fff;
+  border: 1px solid var(--line);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.12);
+  /* 列多到超出视口时横向滚动，保证最深一级仍然点得到；纵向交给每列 */
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+}
+
+/* 翻到左侧时，高亮线改到右边，视觉上仍指向被悬停的分类项 */
+.hero-cats__flyout[data-placement='right'] {
+  border-left: 2px solid var(--brand);
+}
+
+.hero-cats__flyout[data-placement='left'] {
+  border-right: 2px solid var(--brand);
+}
+
+.hero-cats__col {
+  display: flex;
+  flex-direction: column;
+  flex: 0 0 auto;
+  width: 204px;
+  min-width: 180px;
+  max-width: 260px;
+  min-height: 0;
+  max-height: inherit;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 6px 0;
+  background: #fff;
+  scrollbar-width: thin;
+}
+
+.hero-cats__col + .hero-cats__col {
+  border-left: 1px solid var(--line);
+}
+
+.hero-cats__col::-webkit-scrollbar {
+  width: 6px;
+}
+
+.hero-cats__col::-webkit-scrollbar-thumb {
+  background: var(--line-strong);
+  border-radius: 3px;
+}
+
+/* 层级标题：当前这列属于哪一级（如「图书」「少儿」） */
+.hero-cats__title {
+  flex: 0 0 auto;
+  padding: 6px 14px 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-3);
+  letter-spacing: 0.04em;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.hero-cats__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.hero-cats__row {
+  list-style: none;
+}
+
+/* 行内三态共用：叶子 <Link> / 父级 <button> / 未判定 <button data-pending> */
+.hero-cats__link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-family: inherit;
+  line-height: 1.4;
+  text-align: left;
+  color: var(--ink-2);
+  background: none;
+  border: 0;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+
+.hero-cats__link:hover,
+.hero-cats__link:focus-visible,
+.hero-cats__link[data-active='true'] {
+  background: var(--brand-soft);
+  color: var(--brand);
+  outline: none;
+}
+
+.hero-cats__link:focus-visible {
+  box-shadow: inset 0 0 0 1px var(--brand);
+}
+
+.hero-cats__arrow {
+  flex: 0 0 auto;
+  color: var(--ink-3);
   font-size: 13px;
 }
 
-.hero__cat-item:hover {
-  background: var(--bg-3);
+.hero-cats__link:hover .hero-cats__arrow,
+.hero-cats__link[data-active='true'] .hero-cats__arrow {
+  color: var(--brand);
 }
 
-.hero__cat-item span:last-child {
+/* 未判定完成的行：灰字 + 省略号，明确区别于可跳转项 */
+.hero-cats__link[data-pending='true'] {
+  color: var(--ink-3);
+  cursor: progress;
+}
+
+.hero-cats__link[data-pending='true'] .hero-cats__arrow {
+  opacity: 0.45;
+  font-size: 11px;
+}
+
+.hero-cats__hint {
+  padding: 8px 14px;
+  font-size: 12px;
   color: var(--ink-3);
 }
 

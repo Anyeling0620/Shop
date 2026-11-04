@@ -70,6 +70,7 @@ export default async function GoodsDetailPage({ params }: Props) {
       <nav className="crumbs" aria-label="面包屑">
         <Link href="/">首页</Link>
         <span>/</span>
+        {/* 商品挂载的类目一定是最末级类目，按名字搜就能命中该商品 */}
         <Link href={`/search?category=${encodeURIComponent(goods.categoryName)}`}>{goods.categoryName}</Link>
         <span>/</span>
         <span>{goods.brandName}</span>

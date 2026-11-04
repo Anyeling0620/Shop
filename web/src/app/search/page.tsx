@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { searchGoods } from '@/modules/search/api';
+import { getCategories, categoryHref } from '@/modules/catalog/api';
 import { GoodsCard } from '@/components/GoodsCard';
 import { Pager } from '@/components/Pager';
 
@@ -9,6 +10,8 @@ const PAGE_SIZE = 24;
 interface SearchQuery {
   key?: string;
   category?: string;
+  /** 非叶子类目点进来时用类目 id，页面展开子类目而不是直接搜 */
+  categoryId?: string;
   brand?: string;
   minPrice?: string;
   maxPrice?: string;
@@ -46,6 +49,53 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
 export default async function SearchPage({ searchParams }: Props) {
   const sp = await searchParams;
   const page = Math.max(1, Number(sp.page ?? 1) || 1);
+
+  // 从非叶子类目点进来：先取它的子类目。
+  // 后端 ES 只有叶子类目名，直接按父类目名搜必然是 0 条，所以这一步是必需的。
+  const categoryId = Number(sp.categoryId ?? 0) || 0;
+  const children = categoryId > 0 ? await getCategories(categoryId) : [];
+
+  // 有子类目 = 非叶子类目：展开子类目给用户继续点，不发无意义的搜索请求
+  if (children.length > 0) {
+    // 子类目是叶子才按名字搜；否则继续下钻到 categoryId（多级类目逐层展开）
+    const grandChildren = await Promise.all(children.map((child) => getCategories(child.id)));
+
+    return (
+      <div className="container">
+        <nav className="crumbs" aria-label="面包屑">
+          <Link href="/">首页</Link>
+          <span>/</span>
+          <span>分类</span>
+        </nav>
+
+        <section className="section" style={{ marginTop: 0 }}>
+          <div className="section__head">
+            <h1 className="section__title">请选择具体分类</h1>
+            <span className="section__more">共 {children.length} 个子分类</span>
+          </div>
+
+          <div className="filter-row">
+            <span className="filter-row__label">子分类</span>
+            <div className="filter-row__values">
+              {children.map((child, i) => (
+                <Link key={child.id} href={categoryHref(child, (grandChildren[i] ?? []).length === 0)}>
+                  {child.name}
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          <p className="empty">
+            商品按最末级分类归集，请在上方选择一个具体分类。
+            <br />
+            <Link href="/goods" style={{ color: 'var(--brand)' }}>
+              或直接浏览全部商品
+            </Link>
+          </p>
+        </section>
+      </div>
+    );
+  }
 
   const result = await searchGoods(
     {

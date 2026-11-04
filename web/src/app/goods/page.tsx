@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { searchGoods } from '@/modules/search/api';
-import { getTopCategories, getCategories } from '@/modules/catalog/api';
+import { getTopCategories, getCategories, categoryHref } from '@/modules/catalog/api';
 import { GoodsCard } from '@/components/GoodsCard';
 import { Pager } from '@/components/Pager';
 
@@ -23,11 +23,19 @@ export default async function GoodsListPage({ searchParams }: Props) {
   const sp = await searchParams;
   const page = Math.max(1, Number(sp.page ?? 1) || 1);
 
-  // 筛选行只展示前 6 个顶级类目及其二级，避免拉取完整的 175 次类目树
+  // 筛选行展示全部一级类目及其二级（每级只取前 9 个，避免行过长）
   const [result, tops] = await Promise.all([searchGoods({}, page, PAGE_SIZE), getTopCategories()]);
-  const shown = tops.slice(0, 6);
+  const shown = tops;
   const secondLevel = await Promise.all(shown.map((c) => getCategories(c.id)));
-  const categories = shown.map((c, i) => ({ ...c, children: secondLevel[i] ?? [] }));
+  // 二级类目本身也可能是非叶子，第三个请求用来判断它该按名字搜还是继续展开
+  const thirdLevel = await Promise.all(secondLevel.map((subs) => Promise.all(subs.map((sub) => getCategories(sub.id)))));
+  const categories = shown.map((c, i) => ({
+    ...c,
+    children: (secondLevel[i] ?? []).map((sub, j) => ({
+      ...sub,
+      isLeaf: (thirdLevel[i]?.[j] ?? []).length === 0,
+    })),
+  }));
 
   return (
     <div className="container">
@@ -44,12 +52,12 @@ export default async function GoodsListPage({ searchParams }: Props) {
         </div>
 
         <div className="filters">
-          {categories.slice(0, 6).map((c) => (
+          {categories.map((c) => (
             <div className="filter-row" key={c.id}>
               <span className="filter-row__label">{c.name}</span>
               <div className="filter-row__values">
                 {c.children.slice(0, 9).map((sub) => (
-                  <Link key={sub.id} href={`/search?category=${encodeURIComponent(sub.name)}`}>
+                  <Link key={sub.id} href={categoryHref(sub, sub.isLeaf)}>
                     {sub.name}
                   </Link>
                 ))}

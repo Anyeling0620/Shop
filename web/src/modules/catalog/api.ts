@@ -72,6 +72,21 @@ export function getBrandsByCategory(categoryId: number) {
   );
 }
 
+/**
+ * 类目页链接。
+ *
+ * ⚠️ 后端 ES 只索引了商品实际挂载的叶子类目名（如「手机」「文学」），
+ * 顶级/中间类目名（如「图书」「家用电器」）在 ES 里匹配不到任何商品。
+ * 所以：叶子类目直接按名字搜；非叶子类目链接到 `categoryId`，
+ * 由 /search 展开成一屏子类目给用户继续点，不会落进空结果。
+ */
+export function categoryHref(category: { id: number; name: string }, isLeaf: boolean): string {
+  return isLeaf
+    ? `/search?category=${encodeURIComponent(category.name)}`
+    : `/search?categoryId=${category.id}`;
+}
+
+
 /** 商品详情。不存在时返回 null，交给页面走 notFound()。 */
 export async function getGoodsById(id: number | string) {
   try {

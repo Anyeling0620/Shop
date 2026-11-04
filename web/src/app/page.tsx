@@ -4,6 +4,7 @@ import { getTopCategories } from '@/modules/catalog/api';
 import { searchGoods } from '@/modules/search/api';
 import { getSeckillList } from '@/modules/seckill/api';
 import { GoodsCard } from '@/components/GoodsCard';
+import { HeroCategoryNav } from '@/components/HeroCategoryNav';
 import { formatPrice } from '@/lib/format/display';
 
 export const metadata: Metadata = {
@@ -31,12 +32,7 @@ export default async function HomePage() {
     <div className="container">
       <div className="hero">
         <aside className="hero__cats" aria-label="商品分类">
-          {categories.map((c) => (
-            <Link key={c.id} className="hero__cat-item" href={`/search?category=${encodeURIComponent(c.name)}`}>
-              <span>{c.name}</span>
-              <span aria-hidden="true">›</span>
-            </Link>
-          ))}
+          <HeroCategoryNav categories={categories} />
         </aside>
 
         <section className="hero__banner">

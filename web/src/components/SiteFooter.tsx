@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import type { TopCategory } from '@/modules/catalog/api';
+import { categoryHref } from '@/modules/catalog/api';
 
 export function SiteFooter({ categories }: { categories: TopCategory[] }) {
   return (
@@ -21,11 +22,7 @@ export function SiteFooter({ categories }: { categories: TopCategory[] }) {
           <div>
             <div className="footer__title">热门类目</div>
             {categories.slice(0, 4).map((c) => (
-              <Link
-                key={c.id}
-                className="footer__link"
-                href={`/search?category=${encodeURIComponent(c.name)}`}
-              >
+              <Link key={c.id} className="footer__link" href={categoryHref(c, false)}>
                 {c.name}
               </Link>
             ))}

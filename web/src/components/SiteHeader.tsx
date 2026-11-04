@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import type { TopCategory } from '@/modules/catalog/api';
 import type { ShopUser } from '@/modules/catalog/types';
+import { CategoryNav } from '@/components/CategoryNav';
 
 interface Props {
   categories: TopCategory[];
@@ -11,6 +12,9 @@ interface Props {
  * 站点头部，格式参照联想官网：固定在浏览器顶部，分类可选。
  *
  * 只保留真实存在的入口，不虚构「企业购 / 服务支持 / 合作伙伴」等没有后端的栏目。
+ *
+ * ⚠️ 一级类目都不是叶子类目（商品挂在「手机」这类末级分类下），
+ * 所以一级类目不能直接按名字跳搜索，统一交给 CategoryNav 做 hover 逐层展开。
  */
 export function SiteHeader({ categories, user }: Props) {
   return (
@@ -21,20 +25,9 @@ export function SiteHeader({ categories, user }: Props) {
           <span className="brand__name">朱瓦</span>
         </Link>
 
-        {/* 分类在最上方可直接选：横向滚动的一级类目 */}
+        {/* 分类在最上方可直接选：一级类目 hover 在右侧展开子类目，叶子类目才跳转 */}
         <nav className="category-nav" aria-label="商品分类">
-          <Link className="category-nav__link category-nav__link--active" href="/goods">
-            全部
-          </Link>
-          {categories.slice(0, 14).map((c) => (
-            <Link
-              key={c.id}
-              className="category-nav__link"
-              href={`/search?category=${encodeURIComponent(c.name)}`}
-            >
-              {c.name}
-            </Link>
-          ))}
+          <CategoryNav categories={categories} />
         </nav>
 
         <div className="header-tools">
