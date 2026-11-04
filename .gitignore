@@ -27,6 +27,9 @@ yarn-error.log*
 .vscode/
 .DS_Store
 Thumbs.db
+.ai-memory/
+docs/
+backup/
 
 # ---------- 本地调试与探测脚本（不入库） ----------
 .workbuddy/
@@ -36,6 +39,7 @@ Thumbs.db
 .agent-teams/
 *probe*.log
 *_token.txt
+zhuawa-shop-postman/
 res.txt
 
 # ---------- Java / Maven 构建产物 ----------

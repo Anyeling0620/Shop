@@ -2,6 +2,7 @@
   <configuration default="false" name="GoodsApp" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot">
     <module name="goods-service" />
     <option name="SPRING_BOOT_MAIN_CLASS" value="com.zhuawa.shop.goods.GoodsApp" />
+    <option name="VM_PARAMETERS" value="-Xmx512m -XX:+UseG1GC -XX:TieredStopAtLevel=4" />
     <method v="2">
       <option name="Make" enabled="true" />
     </method>

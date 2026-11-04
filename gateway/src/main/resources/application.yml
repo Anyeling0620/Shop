@@ -1,4 +1,4 @@
-﻿server:
+server:
   port: 8081
 spring:
   application:
@@ -28,11 +28,17 @@ spring:
           - Path=/goods/**
           filters:
           - StripPrefix=1 # 跳过 goods
-          - name: RequestRateLimiter #请求数限流 名字不能随便写 ，使用默认的factory
-            args:
-              key-resolver: "#{@ipKeyResolver}"
-              redis-rate-limiter.replenishRate: 1 # 允许用户每秒处理多少个请求
-              redis-rate-limiter.burstCapacity: 5 # 令牌桶的容量，允许在一秒钟内完成的最大请求数
+          # ------------------------------------------------------------------
+          # 压测期已停用 IP 维度限流。
+          # 原配置 replenishRate=1 / burstCapacity=5 会把 /goods/** 硬顶在约 1 QPS，
+          # 任何压测数字都会被这层令牌桶掩盖，测不出真实容量上限。
+          # 压测结束后如需恢复，把下面 5 行的注释去掉即可（ipKeyResolver Bean 仍保留）。
+          # ------------------------------------------------------------------
+          # - name: RequestRateLimiter #请求数限流 名字不能随便写 ，使用默认的factory
+          #   args:
+          #     key-resolver: "#{@ipKeyResolver}"
+          #     redis-rate-limiter.replenishRate: 1 # 允许用户每秒处理多少个请求
+          #     redis-rate-limiter.burstCapacity: 5 # 令牌桶的容量，允许在一秒钟内完成的最大请求数
         - id: zhuawa_shop_user_route
           uri: http://localhost:18006
           predicates:

@@ -2,6 +2,7 @@
   <configuration default="false" name="SearchApp" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot">
     <module name="search-service" />
     <option name="SPRING_BOOT_MAIN_CLASS" value="com.zhuawa.shop.search.SearchApp" />
+    <option name="VM_PARAMETERS" value="-Xmx512m -XX:+UseG1GC -XX:TieredStopAtLevel=4" />
     <method v="2">
       <option name="Make" enabled="true" />
     </method>
