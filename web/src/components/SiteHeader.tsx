@@ -41,6 +41,10 @@ export function SiteHeader({ categories }: { categories: CategoryNode[] }) {
           <Link className="btn" href="/cart">
             购物车
           </Link>
+          <Link className="header__user" href="/account" aria-label="我的账户">
+            <span className="header__user-name">我的账户</span>
+            <span className="header__user-sub">订单 · 积分</span>
+          </Link>
         </div>
       </div>
 

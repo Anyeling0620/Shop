@@ -107,6 +107,21 @@ mark.hl {
   letter-spacing: -0.01em;
 }
 
+/* 标题后的补充说明，不抢标题层级 */
+.section__note {
+  margin-left: 10px;
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--ink-3);
+  letter-spacing: 0;
+}
+
+/* 划线原价 */
+.card__was {
+  font-size: 12px;
+  color: var(--ink-3);
+}
+
 .section__more {
   font-size: 13px;
   color: var(--ink-3);
@@ -241,6 +256,39 @@ mark.hl {
   display: flex;
   gap: 8px;
   margin-left: auto;
+  align-items: center;
+}
+
+/* 购物车右侧的用户入口 */
+.header__user {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding-left: 14px;
+  margin-left: 4px;
+  border-left: 1px solid var(--line);
+  line-height: 1.25;
+}
+
+.header__user:hover {
+  color: var(--brand);
+}
+
+.header__user-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+.header__user:hover .header__user-name {
+  color: var(--brand);
+}
+
+.header__user-sub {
+  font-size: 11px;
+  color: var(--ink-3);
+  white-space: nowrap;
 }
 
 /* ===== 导航 ===== */
@@ -275,13 +323,27 @@ mark.hl {
   grid-template-columns: 220px 1fr;
   gap: 16px;
   margin-top: 20px;
+  /* 高度由 banner 决定，左侧类目再多也不撑高首屏 */
+  align-items: stretch;
 }
 
 .hero__cats {
   border: 1px solid var(--line);
   border-radius: var(--radius);
   padding: 8px 0;
+  /* 后端有 50+ 个顶级类目，限高 + 内部滚动，避免把秒杀和热门挤出首屏 */
+  max-height: 380px;
+  overflow-y: auto;
   align-self: start;
+}
+
+.hero__cats::-webkit-scrollbar {
+  width: 6px;
+}
+
+.hero__cats::-webkit-scrollbar-thumb {
+  background: var(--line-strong);
+  border-radius: 3px;
 }
 
 .hero__cat-item {

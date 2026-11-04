@@ -10,11 +10,12 @@ const nextConfig: NextConfig = {
     ],
   },
   async rewrites() {
-    // 后端没有把图片放 CDN，这里把 /backend-img/* 透传到 goods-service 的静态资源
+    // 商品图片实际由 web-app 的静态目录提供（goods-service 里没有 /img 资源），
+    // 因此 /backend-img/* 透传到 GOODS_STATIC_ORIGIN（默认 web-app :18004）
     return [
       {
         source: '/backend-img/:path*',
-        destination: `${process.env.GOODS_STATIC_ORIGIN ?? 'http://127.0.0.1:18001'}/img/:path*`,
+        destination: `${process.env.GOODS_STATIC_ORIGIN ?? 'http://127.0.0.1:18004'}/img/:path*`,
       },
     ];
   },

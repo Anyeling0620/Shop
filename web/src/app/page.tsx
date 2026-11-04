@@ -23,6 +23,7 @@ export default async function HomePage() {
   ]);
 
   const hot = featured.goodsEsInfoList ?? [];
+  // 秒杀区与热门商品同级同宽，默认只预览 4 个，其余点「更多」进秒杀页
   const seckills = seckillGoods.slice(0, 4);
 
   return (
@@ -58,38 +59,41 @@ export default async function HomePage() {
         </section>
       </div>
 
+      {/* 秒杀与热门商品同宽同级，位于热门商品之上 */}
       {seckills.length > 0 && (
         <section className="section">
           <div className="section__head">
-            <h2 className="section__title">限时秒杀</h2>
+            <h2 className="section__title">
+              限时秒杀
+              <span className="section__note">每日整点开抢</span>
+            </h2>
             <Link className="section__more" href="/seckill">
-              全部秒杀 ›
+              更多 ›
             </Link>
           </div>
-          <div className="seckill-row">
+          <div className="grid">
             {seckills.map((g) => (
-              <Link key={g.goodsId} href={`/seckill/${g.goodsId}`} className="seckill-card">
-                <div className="seckill-card__head">
-                  <span>限时抢购</span>
-                  <span>仅剩 {g.stockSeckill} 件</span>
-                </div>
-                <div className="seckill-card__body">
-                  <div style={{ aspectRatio: '4/3', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    {/* 秒杀图同样是后端相对路径 */}
-                    <img
-                      src={g.img?.startsWith('/img/') ? `/backend-img/${g.img.slice(5)}` : g.img}
-                      alt={g.name}
-                      style={{ maxHeight: 140, objectFit: 'contain' }}
-                      loading="lazy"
-                    />
+              <article className="card" key={g.goodsId}>
+                <Link href={`/seckill/${g.goodsId}`} className="card__media" aria-label={g.name}>
+                  <img
+                    src={g.img?.startsWith('/img/') ? `/backend-img/${g.img.slice(5)}` : g.img}
+                    alt={g.name}
+                    loading="lazy"
+                    width={300}
+                    height={300}
+                  />
+                </Link>
+                <div className="card__body">
+                  <Link href={`/seckill/${g.goodsId}`}>
+                    <h3 className="card__name">{g.name}</h3>
+                  </Link>
+                  <div className="card__foot">
+                    <span className="price">{formatPrice(g.priceSeckill)}</span>
+                    <del className="card__was">{formatPrice(g.price)}</del>
                   </div>
-                  <p style={{ fontSize: 13, margin: '8px 0', minHeight: 38 }}>{g.name}</p>
-                  <div className="seckill-price">
-                    <span className="price price--large">{formatPrice(g.priceSeckill)}</span>
-                    <del>{formatPrice(g.price)}</del>
-                  </div>
+                  <span className="card__stock">仅剩 {g.stockSeckill} 件</span>
                 </div>
-              </Link>
+              </article>
             ))}
           </div>
         </section>
@@ -99,7 +103,7 @@ export default async function HomePage() {
         <div className="section__head">
           <h2 className="section__title">热门商品</h2>
           <Link className="section__more" href="/goods">
-            查看全部 ›
+            更多 ›
           </Link>
         </div>
         {hot.length > 0 ? (
