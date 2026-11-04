@@ -179,145 +179,219 @@ mark.hl {
 }
 
 /* ===== 头部 ===== */
-.header {
-  border-bottom: 1px solid var(--line);
+/* ===== 站点头部（参照联想官网：单行横向导航） ===== */
+.site-header {
   background: #fff;
+  border-bottom: 1px solid var(--line);
   position: sticky;
   top: 0;
   z-index: 50;
 }
 
-.header__bar {
-  background: var(--bg-3);
-  border-bottom: 1px solid var(--line);
-  font-size: 12px;
-  color: var(--ink-3);
-}
-
-.header__bar-inner {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  height: 32px;
-}
-
-.header__links {
-  display: flex;
-  gap: 18px;
-}
-
-.header__main {
+.site-header__inner {
   display: flex;
   align-items: center;
-  gap: 24px;
-  padding: 16px 0;
+  gap: 40px;
+  height: 72px;
 }
 
-.logo {
-  font-size: 24px;
-  font-weight: 800;
-  letter-spacing: -0.04em;
-  color: var(--ink);
-  white-space: nowrap;
+/* 品牌标识：红底色块 + 加宽字距的英文，营造官方标识感 */
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  flex: 0 0 auto;
 }
 
-.logo span {
-  color: var(--brand);
-}
-
-.search-form {
-  flex: 1;
-  display: flex;
-  max-width: 560px;
-  border: 2px solid var(--brand);
-  border-radius: var(--radius);
-  overflow: hidden;
-}
-
-.search-form input {
-  flex: 1;
-  height: 40px;
-  padding: 0 12px;
-  border: 0;
-  font-size: 14px;
-  outline: none;
-}
-
-.search-form button {
-  width: 88px;
-  border: 0;
+.brand__mark {
   background: var(--brand);
   color: #fff;
-  font-size: 14px;
-  font-weight: 600;
-}
-
-.header__actions {
-  display: flex;
-  gap: 8px;
-  margin-left: auto;
-  align-items: center;
-}
-
-/* 购物车右侧的用户入口 */
-.header__user {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  padding-left: 14px;
-  margin-left: 4px;
-  border-left: 1px solid var(--line);
+  font-size: 21px;
+  font-weight: 700;
+  /* 字距加大，让标志更舒展、更像品牌字标 */
+  letter-spacing: 0.16em;
+  padding: 3px 12px 3px 16px;
   line-height: 1.25;
 }
 
-.header__user:hover {
+.brand__name {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--brand);
+  /* 中文同样加宽字距 */
+  letter-spacing: 0.18em;
+}
+
+.brand:hover .brand__mark {
+  background: var(--brand-dark);
+}
+
+.brand:hover .brand__name {
+  color: var(--brand-dark);
+}
+
+/* 主导航 */
+.primary-nav {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+  flex: 0 1 auto;
+}
+
+.primary-nav__link {
+  font-size: 15px;
+  color: var(--ink);
+  white-space: nowrap;
+  padding: 6px 0;
+  border-bottom: 2px solid transparent;
+  transition: color 0.15s ease;
+}
+
+.primary-nav__link:hover,
+.primary-nav__link--active {
+  color: var(--brand);
+  border-bottom-color: var(--brand);
+}
+
+/* 「消费产品」悬浮展开类目 */
+.primary-nav__group {
+  position: relative;
+}
+
+.primary-nav__panel {
+  position: absolute;
+  top: 100%;
+  left: -16px;
+  min-width: 420px;
+  display: none;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px 24px;
+  padding: 16px 20px;
+  background: #fff;
+  border: 1px solid var(--line);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.1);
+  z-index: 60;
+}
+
+.primary-nav__group:hover .primary-nav__panel,
+.primary-nav__group:focus-within .primary-nav__panel {
+  display: grid;
+}
+
+.primary-nav__panel-link {
+  font-size: 13px;
+  color: var(--ink-2);
+  padding: 6px 0;
+  white-space: nowrap;
+}
+
+.primary-nav__panel-link:hover {
   color: var(--brand);
 }
 
-.header__user-name {
-  font-size: 13px;
-  font-weight: 600;
+/* 右侧工具区 */
+.header-tools {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  margin-left: auto;
+  flex: 0 0 auto;
+}
+
+.header-tools__links {
+  display: flex;
+  gap: 20px;
+  font-size: 14px;
+  color: var(--ink);
+}
+
+.header-tools__links a:hover {
+  color: var(--brand);
+}
+
+.header-search {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border-bottom: 1px solid var(--line-strong);
+  padding-bottom: 2px;
+}
+
+.header-search input {
+  width: 96px;
+  border: 0;
+  outline: none;
+  font-size: 14px;
+  font-family: inherit;
+  background: transparent;
+  color: var(--ink);
+}
+
+.header-search input::placeholder {
+  color: var(--ink-3);
+}
+
+.header-search button {
+  display: inline-flex;
+  align-items: center;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  padding: 0 2px;
+}
+
+.header-search button:hover {
+  color: var(--brand);
+}
+
+.header-tools__auth {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
   color: var(--ink);
   white-space: nowrap;
 }
 
-.header__user:hover .header__user-name {
+.header-tools__auth a:hover {
   color: var(--brand);
 }
 
-.header__user-sub {
-  font-size: 11px;
-  color: var(--ink-3);
-  white-space: nowrap;
+.header-tools__sep {
+  color: var(--line-strong);
 }
 
-/* ===== 导航 ===== */
-.nav {
-  border-bottom: 1px solid var(--line);
-  background: #fff;
+@media (max-width: 1100px) {
+  .primary-nav {
+    gap: 20px;
+  }
+  .header-tools__links {
+    display: none;
+  }
 }
 
-.nav__inner {
-  display: flex;
-  gap: 28px;
-  align-items: center;
-  height: 44px;
-  overflow-x: auto;
+@media (max-width: 860px) {
+  .site-header__inner {
+    gap: 20px;
+    height: auto;
+    padding-top: 12px;
+    padding-bottom: 12px;
+    flex-wrap: wrap;
+  }
+  .primary-nav {
+    order: 3;
+    flex-basis: 100%;
+    overflow-x: auto;
+    gap: 18px;
+    padding-bottom: 4px;
+  }
+  .header-tools {
+    gap: 12px;
+  }
+  .header-search input {
+    width: 72px;
+  }
 }
-
-.nav__link {
-  font-size: 15px;
-  font-weight: 500;
-  white-space: nowrap;
-  color: var(--ink-2);
-}
-
-.nav__link--active {
-  color: var(--brand);
-  font-weight: 700;
-}
-
-/* ===== 首页 Hero ===== */
 .hero {
   display: grid;
   grid-template-columns: 220px 1fr;

@@ -108,3 +108,20 @@ export default function md5(input: string): string {
 
   return wordToHex(a0) + wordToHex(b0) + wordToHex(c0) + wordToHex(d0);
 }
+
+/**
+ * 登录密码的前端预处理，必须与后端 MD5Util.inputPassToFormPass 完全一致。
+ *
+ * 后端逻辑（读源码确认）：
+ *   str = salt[0] + salt[2] + 明文密码 + salt[5] + salt[4]
+ *   return md5(str)
+ * 固定盐为 "1a2b3c4d"（旧前端 common.js 里同样写死 g_passsword_salt）。
+ *
+ * 注意：这里**不是**直接对密码做 md5。漏掉加盐会导致后端永远校验失败。
+ */
+export const FORM_PASSWORD_SALT = '1a2b3c4d';
+
+export function formPass(plainPassword: string, salt: string = FORM_PASSWORD_SALT): string {
+  const salted = `${salt.charAt(0)}${salt.charAt(2)}${plainPassword}${salt.charAt(5)}${salt.charAt(4)}`;
+  return md5(salted);
+}
