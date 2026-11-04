@@ -1,6 +1,8 @@
 package com.zhuawa.shop.search.model;
 
 import com.alibaba.fastjson.JSON;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import com.zhuawa.shop.goods.model.Goods;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.Document;
@@ -16,6 +18,9 @@ import java.util.Map;
 @Mapping(mappingPath = "mapping/goods_es_info.json")
 public class GoodsEsInfo {
     @Id
+    // 与 goods-service 的 Goods.id 保持一致：雪花号超出 JS 安全整数范围，
+    // 出参序列化成字符串，避免前端解析后被截断导致商品详情 404。
+    @JsonSerialize(using = ToStringSerializer.class)
     private Long id;
 
     // @Field 字段的映射 , 注解无效，需要json

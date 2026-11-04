@@ -1,5 +1,8 @@
 package com.zhuawa.shop.goods.model;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
+
 import javax.persistence.Column;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -10,6 +13,9 @@ public class Goods {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
+    // 商品 id 是雪花号（19 位，超过 JS Number.MAX_SAFE_INTEGER）。
+    // 序列化成字符串，否则前端 JSON.parse 会把它截断成近似值，再回查必然 404。
+    @JsonSerialize(using = ToStringSerializer.class)
     private Long id;
 
     private String name;
