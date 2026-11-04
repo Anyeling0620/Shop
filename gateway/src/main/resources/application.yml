@@ -51,6 +51,12 @@ spring:
             - Path=/seckill/**
           filters:
             - StripPrefix=1 # 跳过 seckill，前端请求 /seckill/seckill/**
+        - id: zhuawa_shop_search_route
+          uri: http://localhost:18003
+          predicates:
+            - Path=/search/**
+          filters:
+            - StripPrefix=1 # 跳过 search，前端请求 /search/goods/search/{page}/{size}
   redis:
     host: 10.217.238.17
     port: 16379
