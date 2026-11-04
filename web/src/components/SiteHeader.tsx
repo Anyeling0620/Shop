@@ -1,15 +1,18 @@
 import Link from 'next/link';
-import type { CategoryNode } from '@/modules/catalog/api';
+import type { TopCategory } from '@/modules/catalog/api';
+import type { ShopUser } from '@/modules/catalog/types';
+
+interface Props {
+  categories: TopCategory[];
+  user: ShopUser | null;
+}
 
 /**
- * 顶部导航，结构参照联想官网：
- * 单行 = [品牌 Logo] [主导航] ……… [快捷项] [搜索] [登录|注册]
- * 不设顶部信息条，保持一条干净的横向导航。
+ * 站点头部，格式参照联想官网：固定在浏览器顶部，分类可选。
+ *
+ * 只保留真实存在的入口，不虚构「企业购 / 服务支持 / 合作伙伴」等没有后端的栏目。
  */
-export function SiteHeader({ categories }: { categories: CategoryNode[] }) {
-  // 主栏目：品牌站级导航，与后端类目解耦；类目作为下拉在「消费产品」里展开
-  const topCategories = categories.slice(0, 8);
-
+export function SiteHeader({ categories, user }: Props) {
   return (
     <header className="site-header">
       <div className="container site-header__inner">
@@ -18,73 +21,69 @@ export function SiteHeader({ categories }: { categories: CategoryNode[] }) {
           <span className="brand__name">朱瓦</span>
         </Link>
 
-        <nav className="primary-nav" aria-label="主导航">
-          <Link className="primary-nav__link primary-nav__link--active" href="/">
-            商城
+        {/* 分类在最上方可直接选：横向滚动的一级类目 */}
+        <nav className="category-nav" aria-label="商品分类">
+          <Link className="category-nav__link category-nav__link--active" href="/goods">
+            全部
           </Link>
-          <div className="primary-nav__group">
-            <Link className="primary-nav__link" href="/goods">
-              消费产品
+          {categories.slice(0, 14).map((c) => (
+            <Link
+              key={c.id}
+              className="category-nav__link"
+              href={`/search?category=${encodeURIComponent(c.name)}`}
+            >
+              {c.name}
             </Link>
-            <div className="primary-nav__panel">
-              {topCategories.map((c) => (
-                <Link
-                  key={c.id}
-                  className="primary-nav__panel-link"
-                  href={`/search?category=${encodeURIComponent(c.name)}`}
-                >
-                  {c.name}
-                </Link>
-              ))}
-            </div>
-          </div>
-          <Link className="primary-nav__link" href="/seckill">
-            限时秒杀
-          </Link>
-          <Link className="primary-nav__link" href="/goods">
-            企业购
-          </Link>
-          <Link className="primary-nav__link" href="/seckill">
-            服务支持
-          </Link>
-          <Link className="primary-nav__link" href="/goods">
-            合作伙伴
-          </Link>
-          <Link className="primary-nav__link" href="/search">
-            品牌
-          </Link>
+          ))}
         </nav>
 
         <div className="header-tools">
-          <nav className="header-tools__links" aria-label="快捷链接">
-            <Link href="/account">门店</Link>
-            <Link href="/account">会员</Link>
-            <Link href="/account">社区</Link>
-          </nav>
-
           <form className="header-search" action="/search" method="get" role="search">
             <input
               type="search"
               name="key"
-              placeholder="搜索"
+              placeholder="搜索商品"
               aria-label="搜索商品"
               autoComplete="off"
             />
             <button type="submit" aria-label="搜索">
-              <svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true">
-                <circle cx="8.5" cy="8.5" r="5.5" fill="none" stroke="currentColor" strokeWidth="1.6" />
-                <line x1="12.8" y1="12.8" x2="17" y2="17" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+              <svg viewBox="0 0 20 20" width="17" height="17" aria-hidden="true">
+                <circle cx="8.5" cy="8.5" r="5.5" fill="none" stroke="currentColor" strokeWidth="1.7" />
+                <line x1="12.8" y1="12.8" x2="17" y2="17" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
               </svg>
             </button>
           </form>
 
-          <div className="header-tools__auth">
-            <Link href="/login">登录</Link>
-            <span className="header-tools__sep" aria-hidden="true">
-              |
-            </span>
-            <Link href="/login?from=/account">注册</Link>
-          </div>
+          <Link className="header-tools__cart" href="/cart" aria-label="购物车">
+            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+              <path
+                d="M3 4h2.2l2.2 10.2h9.9L19.5 7H6.2"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.6"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <circle cx="9.5" cy="19" r="1.4" fill="currentColor" />
+              <circle cx="17" cy="19" r="1.4" fill="currentColor" />
+            </svg>
+            <span>购物车</span>
+          </Link>
+
+          {/* 已登录显示账户，未登录才显示 登录 | 注册 */}
+          {user ? (
+            <Link className="header-tools__account" href="/account">
+              <span className="header-tools__account-name">{user.nickname || '我的账户'}</span>
+            </Link>
+          ) : (
+            <div className="header-tools__auth">
+              <Link href="/login">登录</Link>
+              <span className="header-tools__sep" aria-hidden="true">
+                |
+              </span>
+              <Link href="/login">注册</Link>
+            </div>
+          )}
         </div>
       </div>
     </header>

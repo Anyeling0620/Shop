@@ -2,7 +2,9 @@ import type { Metadata } from 'next';
 import '@/styles/globals.css';
 import { SiteHeader } from '@/components/SiteHeader';
 import { SiteFooter } from '@/components/SiteFooter';
-import { getCategoryTree } from '@/modules/catalog/api';
+import { getTopCategories } from '@/modules/catalog/api';
+import { getCurrentUser } from '@/modules/user/api';
+import { getRequestToken } from '@/lib/auth/session';
 
 const site = process.env.SITE_ORIGIN ?? 'http://localhost:3000';
 
@@ -22,13 +24,21 @@ export const metadata: Metadata = {
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  // 头部导航依赖类目树，在服务端取好后再直出，爬虫能读到完整分类
-  const categories = await getCategoryTree();
+  /**
+   * 头部只需要顶级类目（1 次请求）。
+   * 注意不要在这里调 getCategoryTree()：它要发 175 次请求，
+   * 每个页面都要付这份开销，切换标签会明显卡顿。
+   */
+  const token = await getRequestToken();
+  const [categories, user] = await Promise.all([
+    getTopCategories(),
+    token ? getCurrentUser(token) : Promise.resolve(null),
+  ]);
 
   return (
     <html lang="zh-CN">
       <body>
-        <SiteHeader categories={categories} />
+        <SiteHeader categories={categories} user={user} />
         <main>{children}</main>
         <SiteFooter categories={categories} />
       </body>

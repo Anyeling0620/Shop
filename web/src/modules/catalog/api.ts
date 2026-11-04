@@ -2,10 +2,21 @@ import 'server-only';
 import { backendRequest, safeRequest } from '@/lib/backend/client';
 import type { Brand, Category, Goods } from '@/modules/catalog/types';
 
-/** 顶级类目（parentId = 0） */
+/** 类目数据是低频变更，缓存 5 分钟，避免每次页面渲染都打后端 */
+const CATEGORY_REVALIDATE = 300;
+
+/**
+ * 顶级类目（parentId = 0）。
+ * 头部导航只需要这一层，1 次请求即可，不要为了下拉去拉全量三级。
+ */
 export function getTopCategories() {
   return safeRequest(
-    () => backendRequest<Category[]>({ service: 'goods', path: '/category/getCategoriesByParentId?parentId=0' }),
+    () =>
+      backendRequest<Category[]>({
+        service: 'goods',
+        path: '/category/getCategoriesByParentId?parentId=0',
+        revalidate: CATEGORY_REVALIDATE,
+      }),
     [],
   );
 }
@@ -17,14 +28,18 @@ export function getCategories(parentId: number) {
       backendRequest<Category[]>({
         service: 'goods',
         path: `/category/getCategoriesByParentId?parentId=${parentId}`,
+        revalidate: CATEGORY_REVALIDATE,
       }),
     [],
   );
 }
 
 /**
- * 构建三级类目导航。
- * 数据量小（顶级约 10 个、每级 3~8 个），并发拉取可接受。
+ * 构建三级类目树。
+ *
+ * ⚠️ 代价很高：实测 1 个顶级 + 51 次二级 + 123 次三级 = 175 个后端请求。
+ * 只允许在确实需要层级展示的页面调用，**不要在 layout 里调用**，
+ * 否则每个页面都要付这份开销，切换标签页会明显卡顿。
  */
 export async function getCategoryTree() {
   const tops = await getTopCategories();
@@ -41,6 +56,9 @@ export async function getCategoryTree() {
 }
 
 export type CategoryNode = Awaited<ReturnType<typeof getCategoryTree>>[number];
+
+/** 头部只需要顶级类目，类型做成轻量版，避免误用重接口 */
+export type TopCategory = Category;
 
 /** 按类目取品牌 */
 export function getBrandsByCategory(categoryId: number) {

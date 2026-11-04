@@ -1,7 +1,7 @@
 import Link from 'next/link';
-import type { CategoryNode } from '@/modules/catalog/api';
+import type { TopCategory } from '@/modules/catalog/api';
 
-export function SiteFooter({ categories }: { categories: CategoryNode[] }) {
+export function SiteFooter({ categories }: { categories: TopCategory[] }) {
   return (
     <footer className="footer">
       <div className="container">

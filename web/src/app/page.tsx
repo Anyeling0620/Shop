@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import type { Metadata } from 'next';
-import { getCategoryTree } from '@/modules/catalog/api';
+import { getTopCategories } from '@/modules/catalog/api';
 import { searchGoods } from '@/modules/search/api';
 import { getSeckillList } from '@/modules/seckill/api';
 import { GoodsCard } from '@/components/GoodsCard';
@@ -16,8 +16,9 @@ export const metadata: Metadata = {
 export const revalidate = 60;
 
 export default async function HomePage() {
+  // 首页左侧只需一级类目，不拉三级树（那要 175 次请求）
   const [categories, featured, seckillGoods] = await Promise.all([
-    getCategoryTree(),
+    getTopCategories(),
     searchGoods({}, 1, 8),
     getSeckillList(),
   ]);

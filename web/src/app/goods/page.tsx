@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { searchGoods } from '@/modules/search/api';
-import { getCategoryTree } from '@/modules/catalog/api';
+import { getTopCategories, getCategories } from '@/modules/catalog/api';
 import { GoodsCard } from '@/components/GoodsCard';
 import { Pager } from '@/components/Pager';
 
@@ -23,7 +23,11 @@ export default async function GoodsListPage({ searchParams }: Props) {
   const sp = await searchParams;
   const page = Math.max(1, Number(sp.page ?? 1) || 1);
 
-  const [result, categories] = await Promise.all([searchGoods({}, page, PAGE_SIZE), getCategoryTree()]);
+  // 筛选行只展示前 6 个顶级类目及其二级，避免拉取完整的 175 次类目树
+  const [result, tops] = await Promise.all([searchGoods({}, page, PAGE_SIZE), getTopCategories()]);
+  const shown = tops.slice(0, 6);
+  const secondLevel = await Promise.all(shown.map((c) => getCategories(c.id)));
+  const categories = shown.map((c, i) => ({ ...c, children: secondLevel[i] ?? [] }));
 
   return (
     <div className="container">
