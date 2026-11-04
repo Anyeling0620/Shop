@@ -1,0 +1,16 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="AllServices" type="CompoundRunConfigurationType" factoryName="Compound">
+    <toRun name="EurekaServerApp" type="SpringBootApplicationConfigurationType" />
+    <toRun name="GatewayApp" type="SpringBootApplicationConfigurationType" />
+    <toRun name="GoodsApp" type="SpringBootApplicationConfigurationType" />
+    <toRun name="UserApp" type="SpringBootApplicationConfigurationType" />
+    <toRun name="OrderApp" type="SpringBootApplicationConfigurationType" />
+    <toRun name="SeckillApp" type="SpringBootApplicationConfigurationType" />
+    <toRun name="SearchApp" type="SpringBootApplicationConfigurationType" />
+    <toRun name="CanalApp" type="SpringBootApplicationConfigurationType" />
+    <toRun name="WebApp" type="SpringBootApplicationConfigurationType" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>
