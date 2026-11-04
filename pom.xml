@@ -28,6 +28,9 @@
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
+        <!-- jjwt 0.9.0 内部依赖 javax.xml.bind.DatatypeConverter，
+             JDK 11+ 已移除 JAXB，需显式补回（JDK 8 下无副作用） -->
+        <jaxb-api.version>2.3.1</jaxb-api.version>
     </properties>
 
     <parent>
@@ -46,6 +49,12 @@
                 <version>2020.0.3</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+            <!-- jjwt 0.9.0 需要的 JAXB，JDK 11+ 不再自带 -->
+            <dependency>
+                <groupId>javax.xml.bind</groupId>
+                <artifactId>jaxb-api</artifactId>
+                <version>${jaxb-api.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

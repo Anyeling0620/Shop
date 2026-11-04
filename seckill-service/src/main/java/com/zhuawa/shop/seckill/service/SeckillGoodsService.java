@@ -2,9 +2,6 @@ package com.zhuawa.shop.seckill.service;
 
 import com.zhuawa.shop.common.exception.GlobalException;
 import com.zhuawa.shop.common.result.CodeMsg;
-import com.zhuawa.shop.common.result.Result;
-import com.zhuawa.shop.goods.api.GoodsApi;
-import com.zhuawa.shop.goods.model.Goods;
 import com.zhuawa.shop.seckill.dao.SeckillGoodsDao;
 import com.zhuawa.shop.seckill.model.SeckillGoods;
 import org.slf4j.Logger;
@@ -19,14 +16,8 @@ public class SeckillGoodsService {
 
     private static final Logger logger = LoggerFactory.getLogger(SeckillGoodsService.class);
 
-    /** goods-service 中商品状态：0 上架 */
-    private static final int GOODS_STATUS_ON_SALE = 0;
-
     @Autowired
     SeckillGoodsDao seckillGoodsDao;
-
-    @Autowired
-    GoodsApi goodsApi;
 
     public List<SeckillGoods> listSeckillGoods() {
         return seckillGoodsDao.listSeckillGoods();
@@ -41,15 +32,16 @@ public class SeckillGoodsService {
     }
 
     /**
-     * 通过 Feign 调 goods-service，校验商品存在且处于上架状态
+     * 校验秒杀商品是否可秒杀。
+     * <p>
+     * 秒杀商品的数据源是本库（seckill.goods + seckill.goods_seckill），与 goods-service 的
+     * goods.goods 是两套完全独立的数据（两套 id 体系，字段结构也不同），因此这里做本地校验，
+     * 不再 Feign 调用 goods-service —— 否则必然查不到、秒杀详情页全部报 500504。
      */
     public void checkGoodsOnSale(long goodsId) {
-        Result<Goods> result = goodsApi.get(goodsId);
-        if (result == null || result.getCode() != 0 || result.getData() == null) {
+        if (seckillGoodsDao.countOnSale(goodsId) <= 0) {
+            logger.warn("seckill goods not on sale, goodsId: {}", goodsId);
             throw new GlobalException(CodeMsg.SECKILL_GOODS_NOT_EXIST);
-        }
-        if (result.getData().getStatus() != GOODS_STATUS_ON_SALE) {
-            throw new GlobalException(CodeMsg.SECKILL_GOODS_OFF_SHELF);
         }
     }
 

@@ -41,6 +41,12 @@
             <artifactId>jjwt</artifactId>
             <version>0.9.0</version>
         </dependency>
+
+        <!-- jjwt 0.9.0 内部使用 javax.xml.bind.DatatypeConverter，JDK 11+ 需显式补回 -->
+        <dependency>
+            <groupId>javax.xml.bind</groupId>
+            <artifactId>jaxb-api</artifactId>
+        </dependency>
     </dependencies>
 
     <dependencyManagement>
