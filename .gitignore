@@ -1,10 +1,46 @@
+# ---------- 前端（web/）依赖与构建产物 ----------
+node_modules/
+.next/
+out/
+build/
+dist/
+*.tsbuildinfo
+next-env.d.ts
+.pnpm-store/
+
+# ---------- 环境变量（含后端地址，按环境本地配置） ----------
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# ---------- 日志与临时文件 ----------
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-error.log*
+*.tmp
+
+# ---------- IDE / 工具 ----------
 .idea/
+*.iml
+.vscode/
+.DS_Store
+Thumbs.db
+
+# ---------- 本地调试与探测脚本（不入库） ----------
 .workbuddy/
 .dsh/
 .claude/
 .codex/
-*.iml
+.agent-teams/
+*probe*.log
+*_token.txt
+res.txt
+
+# ---------- Java / Maven 构建产物 ----------
 target/
 logs/
 
-Dump20220221
+# ---------- 数据库导出与本地数据 ----------
+Dump20220221/
