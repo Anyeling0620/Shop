@@ -45,14 +45,23 @@ spring:
             - Path=/user/**
           filters:
             - StripPrefix=1 # 跳过 users
+        # ------------------------------------------------------------------
+        # order / seckill 由 lb://order、lb://seckill 改为直连。
+        # 原因：lb:// 每次请求都要走 Eureka 服务发现 + Spring Cloud LoadBalancer
+        # 选实例，实测比直连多约 20ms；本机单实例部署下这层开销纯属浪费。
+        # 取舍：失去负载均衡与实例自动上下线能力。若将来要给 order / seckill
+        # 扩成多实例，把下面的 uri 改回 lb://order、lb://seckill 即可
+        # （Eureka 注册配置未动，服务仍在注册，可直接切回）。
+        # 端口必须与各服务 server.port 保持一致：order=18002，seckill=18007。
+        # ------------------------------------------------------------------
         - id: zhuawa_shop_order_route
-          uri: lb://order
+          uri: http://localhost:18002       # ← 直连（原 lb://order）
           predicates:
             - Path=/order/**
           filters:
             - StripPrefix=1 # 跳过 order
         - id: zhuawa_shop_seckill_route
-          uri: lb://seckill
+          uri: http://localhost:18007       # ← 直连（原 lb://seckill）
           predicates:
             - Path=/seckill/**
           filters:
@@ -67,6 +76,11 @@ spring:
     host: 127.0.0.1
     port: 16379
     password: 12345678
+    # 不使用 Lettuce 连接池（保持 Spring 默认 shareNativeConnection=true）。
+    # 实测：Lettuce 线程安全且命令多路复用，对本地 Redis（RTT 微秒级）共享单连接吞吐更高。
+    # 开启连接池后同一端点 100 并发 QPS 从约 5000 掉到约 2000（max-active=16 形成排队）。
+    # 除非将来真的出现「慢命令/大 key 阻塞所有请求」，否则不要打开池化。
+    # 注：本网关当前 Redis 只服务限流器，而 RequestRateLimiter 在压测期被注释禁用。
 
 # ----------------------------------------------------------------------
 # 压测期日志降级：AuthFilter.java:50 每个请求都执行 logger.info("uri: {}")，

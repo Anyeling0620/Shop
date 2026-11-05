@@ -1,4 +1,4 @@
-﻿server:
+server:
   port: 18006
 spring:
   application:
@@ -9,8 +9,20 @@ spring:
     username: root
     password: 12345678
     type: com.alibaba.druid.pool.DruidDataSource
-    # 连接池参数请写在 spring.datasource.druid.* 下并引入 druid-spring-boot-starter，
-    # 仅依赖 druid 时 spring.datasource.* 不会绑定任何池参数（Druid 走自身默认值）
+    # ---- Druid 连接池（已引入 druid-spring-boot-starter，这些参数会真正绑定）----
+    # 改前走 Druid 默认值 maxActive=8 / maxWait=-1（无限等待），高并发下
+    # 大量 Tomcat 线程阻塞在 DruidDataSource.takeLast。
+    druid:
+      initial-size: 5
+      min-idle: 5
+      max-active: 32
+      max-wait: 3000          # 毫秒；绝不能配 -1
+      validation-query: SELECT 1
+      test-while-idle: true
+      test-on-borrow: false
+      test-on-return: false
+      time-between-eviction-runs-millis: 60000
+      min-evictable-idle-time-millis: 300000
 
 eureka:
   client:

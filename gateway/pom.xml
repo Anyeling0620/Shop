@@ -35,6 +35,15 @@
             <artifactId>spring-boot-starter-data-redis-reactive</artifactId>
         </dependency>
 
+        <!-- Lettuce 连接池实现。只有 commons-pool2 在 classpath 上时，
+             spring.redis.lettuce.pool.* 才会生效；缺失时 Lettuce 退化为单连接，
+             所有命令串行在同一个 nioEventLoop 线程上（压测实测该线程吃满 0.55 核，
+             单连接上限约 2914 ops/s）。版本由 spring-boot-starter-parent 管理。 -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-pool2</artifactId>
+        </dependency>
+
         <!--鉴权-->
         <dependency>
             <groupId>io.jsonwebtoken</groupId>

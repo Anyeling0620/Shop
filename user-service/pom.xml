@@ -35,9 +35,11 @@
             <artifactId>mysql-connector-java</artifactId>
         </dependency>
 
+        <!-- 必须用 druid-spring-boot-starter：仅依赖 druid 时 spring.datasource.druid.* 不会绑定任何池参数，
+             Druid 会走自身默认值（maxActive=8 / maxWait=-1 无限等待）。版本保持与原先 1.1.10 一致。 -->
         <dependency>
             <groupId>com.alibaba</groupId>
-            <artifactId>druid</artifactId>
+            <artifactId>druid-spring-boot-starter</artifactId>
             <version>1.1.10</version>
         </dependency>
 
