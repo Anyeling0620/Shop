@@ -24,7 +24,17 @@ export interface SeckillStatusBadgeProps {
   serverStatus?: number;
   /** 秒杀库存（可能是负数脏数据），内部统一走 displayStock 归一 */
   stockSeckill: unknown;
-  /** 是否在文案里带 `HH:mm:ss` 秒数（列表卡片通常关掉） */
+  /**
+   * 是否在文案里带 `HH:mm:ss` 秒数。
+   *
+   * **列表页与首页的卡片现已开启**（`SeckillCard` 传 `showSeconds`），与详情页一致：
+   * 展示「距开抢 00:00:05」/「抢购中 · 剩余 00:00:05」，每秒递减。
+   * 秒数完全由本地时钟与已获取的时间快照相减得出，不触发任何后端请求。
+   *
+   * 传 `false` 时退化为纯文字（「即将开始」/「抢购中」），需要克制信息密度的场景可用。
+   * 注意：无论本开关为何值，首帧的 `pending` 分支都先返回中性占位，不会输出秒数
+   * （见下方实现，避免 SSR 输出倒计时导致 hydration mismatch）。
+   */
   showSeconds?: boolean;
   className?: string;
 }
@@ -55,7 +65,9 @@ export function SeckillStatusBadge({
   );
   const soldOut = displayStock(stockSeckill) <= 0;
 
-  // 首帧：时间态未知，只把与时钟无关的「已抢光」说出来
+  // 首帧：时间态未知，只把与时钟无关的「已抢光」说出来。
+  // 这里是**先返回**，所以 `showSeconds` 再怎么开也不可能把倒计时秒数渲染进服务端 HTML
+  // （SSR 与客户端首帧都走这个分支，输出逐字节一致，不会 hydration mismatch）。
   if (phase === 'pending') {
     return <span className={className}>{soldOut ? `${PLACEHOLDER} · 已抢光` : PLACEHOLDER}</span>;
   }

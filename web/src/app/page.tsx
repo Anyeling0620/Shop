@@ -104,12 +104,15 @@ export default async function HomePage() {
                       {/*
                         状态文案交给客户端组件按本机时钟计算，不把渲染时刻的判断写进 HTML（R-DEF-01）。
                         不传 serverStatus：本页没有可信的服务端状态基线，首帧给中性占位。
+                        showSeconds：首页卡片与列表中详情页保持一致，逐秒显示「距开抢 / 剩余 HH:mm:ss」。
+                        秒数只由本地时钟推进、不发请求；首帧仍走 pending 分支输出「—」，不会进 SSR HTML。
                       */}
                       <SeckillStatusBadge
                         startAt={parseTime(g.startTime)}
                         endAt={parseTime(g.endTime)}
                         remainSeconds={0}
                         stockSeckill={g.stockSeckill}
+                        showSeconds
                       />
                     </div>
                     <div className="card__foot">

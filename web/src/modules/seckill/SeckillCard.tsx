@@ -65,8 +65,9 @@ export function SeckillCard({ goods, allSessions = [], eager = false }: Props) {
     // 它驱动的是「**重新选场**」：每次触发都会跑一遍 pickSession，还可能改变卡片的场次与链接。
     // 秒杀场次的边界是以分钟计的（11:00–12:00 这种），30 秒足够及时；
     // 若改成每秒，pickSession 每秒跑一次、卡片 href 可能频繁变化，得不偿失。
-    // 卡片上的「距开抢 / 剩余」秒数由 SeckillStatusBadge → useLivePhase 以 1 秒推进，
-    // 与这里的选场刷新是两件独立的事。
+    //
+    // 卡片上显示的「距开抢 / 剩余 HH:mm:ss」由 SeckillStatusBadge → useLivePhase 以 1 秒推进，
+    // 与这里的选场刷新是两件独立的事：一个管「秒数怎么跳」，一个管「看哪一场」。
     const timer = setInterval(() => setNow(Date.now()), 30000);
     return () => clearInterval(timer);
   }, []);
@@ -100,6 +101,10 @@ export function SeckillCard({ goods, allSessions = [], eager = false }: Props) {
           // 卡片不传 remainSeconds：列表没有服务端状态基线，无从校准（R-UI-10 的可用前提不满足）
           remainSeconds={0}
           stockSeckill={displayGoods.stockSeckill}
+          // 用户要求列表/首页卡片也逐秒显示「距开抢 / 剩余 HH:mm:ss」。
+          // 秒数只取决于本地时钟，不发请求；而首帧仍是中性占位（pending 分支先返回，见组件内注释），
+          // 所以不会把数字渲染进 SSR HTML，也不会重新引入 hydration mismatch。
+          showSeconds
         />
         {/* 负库存一律显示 0 并归入「已抢光」，卡片本身不隐藏（R-UI-07 / R-DEF-06） */}
         <span>{stock > 0 ? `仅剩 ${stock} 件` : '已抢光'}</span>
