@@ -54,6 +54,31 @@
             <version>1.2.3</version>
         </dependency>
 
+        <!-- Caffeine 本地缓存（L1）。
+             版本必须与项目运行基线匹配：Caffeine 2.x 兼容 Java 8（jar 内 class 字节码 major=52）；
+             Caffeine 3.x 起要求 Java 11+（3.1.8 的 class 为 major=55），在 JRE 8 上会
+             UnsupportedClassVersionError。本项目 maven.compiler.source/target 均为 8，
+             故固定使用 2.9.3（本次用到的 newBuilder/maximumSize/expireAfterWrite/build
+             在 2.x 与 3.x 上 API 等价）。 -->
+        <dependency>
+            <groupId>com.github.ben-manes.caffeine</groupId>
+            <artifactId>caffeine</artifactId>
+            <version>2.9.3</version>
+        </dependency>
+
+        <!-- Redis 分布式缓存（L2）：版本由 spring-boot 2.5.4 parent 统一管理，不写死版本 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
+
+        <!-- 单测：版本同样由 parent 管理 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
 </project>
