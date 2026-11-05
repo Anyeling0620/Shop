@@ -9,6 +9,13 @@ import java.util.Date;
 public class SeckillGoods {
 
     private Long goodsId;
+    /**
+     * 场次编号：同一商品可以开多场秒杀，靠 (goodsId, sessionId) 唯一定位一场。
+     * <p>
+     * 为什么用 Integer 而不是 long：这是一次联查结果的投影字段，缺失时保持 null
+     * 能立刻暴露"某条 SQL 忘了带 session_id"，而不是被 0 悄悄掩盖。
+     */
+    private Integer sessionId;
     private String name;
     private String title;
     private String img;
@@ -26,6 +33,14 @@ public class SeckillGoods {
 
     public void setGoodsId(Long goodsId) {
         this.goodsId = goodsId;
+    }
+
+    public Integer getSessionId() {
+        return sessionId;
+    }
+
+    public void setSessionId(Integer sessionId) {
+        this.sessionId = sessionId;
     }
 
     public String getName() {

@@ -23,8 +23,25 @@ public class SeckillGoodsService {
         return seckillGoodsDao.listSeckillGoods();
     }
 
+    /**
+     * 取某商品的「当前场次」（session_id 最大的一场），为兼容既有调用方而保留。
+     * <p>
+     * 需要精确到某一场的地方请用 {@link #getByGoodsIdAndSession(long, int)}。
+     */
     public SeckillGoods getByGoodsId(long goodsId) {
         SeckillGoods goods = seckillGoodsDao.getByGoodsId(goodsId);
+        if (goods == null) {
+            throw new GlobalException(CodeMsg.SECKILL_GOODS_NOT_EXIST);
+        }
+        return goods;
+    }
+
+    /**
+     * 精确取「某商品的某一场次」。场次是判重与扣库存的必需维度，
+     * 查不到时等同于商品不存在 —— 不能退化成"随便取一场"。
+     */
+    public SeckillGoods getByGoodsIdAndSession(long goodsId, int sessionId) {
+        SeckillGoods goods = seckillGoodsDao.getByGoodsIdAndSession(goodsId, sessionId);
         if (goods == null) {
             throw new GlobalException(CodeMsg.SECKILL_GOODS_NOT_EXIST);
         }
@@ -45,7 +62,7 @@ public class SeckillGoodsService {
         }
     }
 
-    public int reduceStock(long goodsId) {
-        return seckillGoodsDao.reduceStock(goodsId);
+    public int reduceStock(long goodsId, int sessionId) {
+        return seckillGoodsDao.reduceStock(goodsId, sessionId);
     }
 }

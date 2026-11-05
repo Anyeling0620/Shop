@@ -1,4 +1,4 @@
-﻿server:
+server:
   port: 18007
 spring:
   application:
@@ -34,3 +34,18 @@ mybatis:
     default-statement-timeout: 3000
   mapper-locations: classpath:mapper/*Mapper.xml
   type-aliases-package: com.zhuawa.shop.seckill.model
+
+zhuawa:
+  seckill:
+    # 一人一单判重标记的存活秒数（默认 3600 = 1 小时）。
+    # 它与"业务周期"强耦合，不能拍脑袋配：
+    #   - 短于订单超时时间：用户可以在旧订单还活着时再抢一次，一个人占两单；
+    #   - 短于一场秒杀时长：同一用户可在同一场内重复下单，判重形同虚设；
+    #   - 远长于业务周期：订单超时关闭后用户仍被挡住，无法重新参与。
+    # 调整前请先确认秒杀场次时长与订单超时策略，两者取较大值再加一点余量。
+    order-mark-ttl-seconds: 3600
+    # 预扣名额"归还闸门"key 的存活秒数（默认 86400 = 24 小时）。
+    # 它只用于保证补偿幂等（同一个 requestId 最多归还一次），
+    # 与上面的业务 TTL 无关，只需要覆盖"消息从发出到最终确认失败"的最长窗口。
+    # 配短了可能让迟到的重投消息重复归还（导致超卖），配长了只是多占一点 redis 内存。
+    rollback-gate-ttl-seconds: 86400

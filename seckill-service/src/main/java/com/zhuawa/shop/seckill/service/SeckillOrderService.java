@@ -27,8 +27,8 @@ public class SeckillOrderService {
     @Autowired
     RedisService redisService;
 
-    public OrderSeckill getOrderSeckill(long userId, long goodsId) {
-        return orderDao.getOrderSeckill(userId, goodsId);
+    public OrderSeckill getOrderSeckill(long userId, long goodsId, int sessionId) {
+        return orderDao.getOrderSeckill(userId, goodsId, sessionId);
     }
 
     /**
@@ -39,8 +39,15 @@ public class SeckillOrderService {
         if (goods == null || goods.getGoodsId() == null) {
             throw new GlobalException(CodeMsg.SECKILL_GOODS_NOT_EXIST);
         }
-        // 1. 减库存，stock_seckill > 0 条件防超卖；影响行数为 0 说明无货，抛异常回滚事务
-        int updated = seckillGoodsDao.reduceStock(goods.getGoodsId());
+        // 场次必须已经确定：没带场次就落库等于把「一人一单」的判据退回商品级，
+        // 那样第二场会永远写不进去。宁可直接失败重试，也不写一条归属不明的订单。
+        if (goods.getSessionId() == null) {
+            throw new GlobalException(CodeMsg.SECKILL_GOODS_NOT_EXIST);
+        }
+        int sessionId = goods.getSessionId();
+        // 1. 减库存，stock_seckill > 0 条件防超卖；影响行数为 0 说明无货，抛异常回滚事务。
+        //    按 (goods_id, session_id) 扣，避免多场次时扣错行。
+        int updated = seckillGoodsDao.reduceStock(goods.getGoodsId(), sessionId);
         if (updated == 0) {
             throw new GlobalException(CodeMsg.SECKILL_OVER);
         }
@@ -56,15 +63,17 @@ public class SeckillOrderService {
         order.setCreateTime(new Date());
         long orderId = orderDao.insertOrder(order);
         order.setId(orderId);
-        // 3. 插入秒杀订单（user_id+goods_id 唯一索引兜底防重复）
+        // 3. 插入秒杀订单（user_id+goods_id+session_id 唯一索引兜底防重复）
         OrderSeckill orderSeckill = new OrderSeckill();
         orderSeckill.setUserId(userId);
         orderSeckill.setGoodsId(goods.getGoodsId());
+        orderSeckill.setSessionId(sessionId);
         orderSeckill.setOrderId(orderId);
         orderSeckill.setCreateTime(new Date());
         orderDao.insertOrderSeckill(orderSeckill);
-        // 4. 缓存秒杀结果
-        redisService.set(RedisKeys.SECKILL_ORDER_ID + userId + ":" + goods.getGoodsId(), String.valueOf(orderId));
+        // 4. 缓存秒杀结果（场次级，与 getSeckillResult 的读取 key 必须一致）
+        redisService.set(RedisKeys.SECKILL_ORDER_ID + userId + ":" + goods.getGoodsId() + ":" + sessionId,
+                String.valueOf(orderId));
         return order;
     }
 }

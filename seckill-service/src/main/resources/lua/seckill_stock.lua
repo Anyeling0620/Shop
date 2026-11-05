@@ -2,8 +2,8 @@
   秒杀原子预扣库存脚本（Redis 单线程执行，整体原子，不存在中间态）
 
   入参：
-    KEYS[1] = 库存 key            seckill:stock:{goodsId}
-    KEYS[2] = 一人一单判重 key     seckill:orderMark:{userId}:{goodsId}
+    KEYS[1] = 库存 key            seckill:stock:{goodsId}:{sessionId}（场次级，由 Java 侧拼装）
+    KEYS[2] = 一人一单判重 key     seckill:orderMark:{userId}:{goodsId}:{sessionId}
     ARGV[1] = 判重 key 的过期秒数（普通数字字符串，如 "3600"）
 
   返回（数字字符串，Java 侧以 Long 接收）：
