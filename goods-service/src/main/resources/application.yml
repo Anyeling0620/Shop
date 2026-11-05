@@ -1,4 +1,4 @@
-﻿server:
+server:
   port: 18001
 spring:
   application:
@@ -16,6 +16,27 @@ spring:
       static-locations: classpath:/static/
       chain:
         enabled: true
+  # 与 seckill-service 共用同一套本地 redis
+  redis:
+    host: 127.0.0.1
+    port: 16379
+    password: 12345678
+
+# 多级缓存（Caffeine L1 + Redis L2 + MySQL L3）可调参数
+zhuawa:
+  cache:
+    # ---- HeavyKeeper 热点 key 检测参数（迁移自 yu-like）----
+    topk: 100                # 只保留最热的 k 个 key
+    width: 100000            # 哈希桶宽度，越大冲突越少、内存占用越高
+    depth: 5                 # 哈希表深度，决定指纹冲突的抗噪能力
+    decay: 0.92              # 衰减系数，桶计数被挤出时的衰减概率基数
+    min-count: 10            # 计数低于该值不进入 TopK
+    fading-interval-ms: 20000 # 热点衰减周期（毫秒），默认 20 秒
+    # ---- Caffeine 本地缓存 ----
+    local-maximum-size: 1000 # 本地缓存最大条目数
+    local-expire-seconds: 300 # 本地缓存写入后过期时间（秒）
+    # ---- Redis L2 ----
+    redis-expire-seconds: 1800 # 商品详情在 Redis 中的过期时间（秒）
 
 eureka:
   client:
