@@ -68,6 +68,16 @@ spring:
     port: 16379
     password: 12345678
 
+# ----------------------------------------------------------------------
+# 压测期日志降级：AuthFilter.java:50 每个请求都执行 logger.info("uri: {}")，
+# 属于同步 IO，跑在只有 32 个 Reactor 事件循环线程的 WebFlux 模型上。
+# 压测期间该日志已把 GatewayApp.out.log 写到 448MB，是最可疑的网关瓶颈。
+# 这里把包级日志降到 WARN，用于 A/B 对照验证；验证完可删除本段。
+# ----------------------------------------------------------------------
+logging:
+  level:
+    com.zhuawa.shop.gateway.filter.AuthFilter: WARN
+
 auth:
   skip:
     urls: http://localhost:8081/user/user/login/do_login

@@ -1,5 +1,11 @@
 server:
   port: 18001
+  tomcat:
+    # 默认 100，改为 1 万：避免服务端每 100 个请求就主动 FIN 断开
+    # 高并发压测下这会让客户端建连速率骤降，避免 TIME_WAIT/临时端口耗尽
+    max-keep-alive-requests: 10000
+    # 连接建立/请求头读取超时（毫秒），防止半开连接长期占位
+    connection-timeout: 20000
 spring:
   application:
     name: goods
