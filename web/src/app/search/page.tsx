@@ -4,6 +4,7 @@ import { searchGoods } from '@/modules/search/api';
 import { getCategories, categoryHref } from '@/modules/catalog/api';
 import { GoodsCard } from '@/components/GoodsCard';
 import { Pager } from '@/components/Pager';
+import { FilterRow, type FilterOption } from '@/components/FilterRow';
 
 const PAGE_SIZE = 24;
 
@@ -97,22 +98,57 @@ export default async function SearchPage({ searchParams }: Props) {
     );
   }
 
-  const result = await searchGoods(
-    {
-      key: sp.key ?? null,
-      category: sp.category ?? '',
-      brand: sp.brand ?? '',
-      minPrice: Number(sp.minPrice ?? 0) || 0,
-      maxPrice: Number(sp.maxPrice ?? 0) || 0,
-      orderField: sp.orderField ?? '',
-      orderType: (sp.orderType as 'asc' | 'desc' | '') ?? '',
-    },
-    page,
-    PAGE_SIZE,
-  );
+  /** 查询共用的筛选条件：key / 品牌 / 价格 / 排序 */
+  const baseFilters = {
+    key: sp.key ?? null,
+    brand: sp.brand ?? '',
+    minPrice: Number(sp.minPrice ?? 0) || 0,
+    maxPrice: Number(sp.maxPrice ?? 0) || 0,
+    orderField: sp.orderField ?? '',
+    orderType: (sp.orderType as 'asc' | 'desc' | '') ?? '',
+  };
 
-  const categories = result.categoryList ?? [];
-  const brands = result.brandList ?? [];
+  const selectedCategory = sp.category ?? '';
+  const selectedBrand = sp.brand ?? '';
+
+  /**
+   * 只发一次查询。
+   *
+   * ⚠️ 历史坑（不要再改回去）：上一版为了解决「后端 category 非空时不返回 categoryList」，
+   * 在选中类目时补发了一次 category 为空的查询来取选项。这个做法是错的：
+   * 从头部导航点「手机」进来时 URL 里没有 key，于是那次补发查询 =
+   * **空关键词 + 空类目 + 没有任何筛选**，ES 会把它当成全站聚合，
+   * 把所有有货的叶子类目都吐回来 —— 实测 /search?category=手机 的类目行
+   * 因此冒出毫不相干的「休闲鞋」（鞋靴>流行男鞋>休闲鞋）和「平板电视」，
+   * 而它们和「手机」分属三个不同的顶级类目。
+   * 结论：**不能用空 category 的查询来取选项，因为无 key 时它等于全站聚合**。
+   *
+   * 现在改成下面这样，只依赖这一次查询的结果，不再多发请求：
+   * - 没选类目/品牌（''）→ 后端本来就会返回本次搜索的聚合，直接用它，
+   *   这个场景是有意义的收窄提示（例如搜「华为」得到手机、平板电视）；
+   * - 已选中某类目/品牌 → 后端返回 null（聚合只剩当前值，没有筛选意义），
+   *   就只展示「不限 + 当前值」，不猜、不补查、不展示跨大类的无关项。
+   */
+  const result = await searchGoods({ ...baseFilters, category: selectedCategory }, page, PAGE_SIZE);
+
+  /** 选项名：'' 时取后端聚合，非空时只有当前这一个（去重、最多 12 个） */
+  function optionNames(selected: string, aggregated: string[] | null): string[] {
+    if (selected) return [selected];
+    return Array.from(new Set(aggregated ?? [])).filter(Boolean).slice(0, 12);
+  }
+
+  const categoryNames = optionNames(selectedCategory, result.categoryList);
+  const brandNames = optionNames(selectedBrand, result.brandList);
+
+  // 地址由服务端算好传给客户端组件，组件里不做任何 query 拼接；
+  // 换任一维度都不带 page，等于把页码重置回第一页
+  const toLinks = (names: string[], patch: (name: string) => Partial<SearchQuery>): FilterOption[] =>
+    names.map((name) => ({ name, href: buildQuery(sp, { ...patch(name), page: undefined }) }));
+
+  const categoryLinks = toLinks(categoryNames, (name) => ({ category: name }));
+  const categoryAllHref = buildQuery(sp, { category: '', page: undefined });
+  const brandLinks = toLinks(brandNames, (name) => ({ brand: name }));
+  const brandAllHref = buildQuery(sp, { brand: '', page: undefined });
   const hasFilter = Boolean(sp.key || sp.category || sp.brand || sp.minPrice || sp.maxPrice);
 
   return (
@@ -132,39 +168,32 @@ export default async function SearchPage({ searchParams }: Props) {
         </div>
 
         <div className="filters">
-          {categories.length > 0 && (
+          {/*
+            类目行与品牌行都是单选筛选，交给同一个客户端组件原地切换（不整页跳转）。
+            选项来源见上方 optionNames 的注释：选中某值时只显示「不限 + 当前值」，
+            所以刷新带参数的地址也照样渲染出完整的行，不会整行消失。
+          */}
+          {categoryLinks.length > 0 && (
             <div className="filter-row">
               <span className="filter-row__label">类目</span>
-              <div className="filter-row__values">
-                <Link href={buildQuery(sp, { category: '', page: undefined })} data-active={!sp.category}>
-                  不限
-                </Link>
-                {categories.slice(0, 12).map((c) => (
-                  <Link
-                    key={c}
-                    href={buildQuery(sp, { category: c, page: undefined })}
-                    data-active={sp.category === c}
-                  >
-                    {c}
-                  </Link>
-                ))}
-              </div>
+              <FilterRow
+                label="类目筛选"
+                options={categoryLinks}
+                active={selectedCategory}
+                allHref={categoryAllHref}
+              />
             </div>
           )}
 
-          {brands.length > 0 && (
+          {brandLinks.length > 0 && (
             <div className="filter-row">
               <span className="filter-row__label">品牌</span>
-              <div className="filter-row__values">
-                <Link href={buildQuery(sp, { brand: '', page: undefined })} data-active={!sp.brand}>
-                  不限
-                </Link>
-                {brands.slice(0, 12).map((b) => (
-                  <Link key={b} href={buildQuery(sp, { brand: b, page: undefined })} data-active={sp.brand === b}>
-                    {b}
-                  </Link>
-                ))}
-              </div>
+              <FilterRow
+                label="品牌筛选"
+                options={brandLinks}
+                active={selectedBrand}
+                allHref={brandAllHref}
+              />
             </div>
           )}
 

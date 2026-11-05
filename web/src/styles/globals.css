@@ -1077,6 +1077,37 @@ a.category-nav__link[aria-expanded='true'] {
   font-weight: 700;
 }
 
+/*
+ * 类目行的选项是 <button>（原地切换筛选条件，不整页跳转），
+ * 但视觉上必须和「品牌 / 排序」那些 <a> 完全一致：纯文字、13px、无边框无背景。
+ * 浏览器给按钮的默认样式（灰底、边框、居中、系统字体）一律抹掉。
+ */
+.filter-row__values button {
+  appearance: none;
+  -webkit-appearance: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font-family: inherit;
+  font-size: 13px;
+  line-height: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+/* 悬停与链接保持同一种轻微反馈（纯文字变色），不做成明显的大按钮 */
+.filter-row__values button:hover {
+  color: var(--brand);
+}
+
+/* 选中态沿用链接那套「红色 + 加粗」，顺序放在 hover 之后才能压住它 */
+.filter-row__values button[data-active='true'] {
+  color: var(--brand);
+  font-weight: 700;
+}
+
 /* ===== 表单 ===== */
 .field {
   display: flex;
