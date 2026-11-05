@@ -66,9 +66,20 @@ export interface SearchParams {
   orderType?: 'asc' | 'desc' | '';
 }
 
-/** 秒杀商品（seckill-service，price 为元，BigDecimal） */
+/**
+ * 秒杀商品（seckill-service，price 为元，BigDecimal）
+ *
+ * 一条记录 = 一个**场次**。同一 goodsId 配了多场时，`/seckill/list` 会返回多条，
+ * 只有 `(goodsId, sessionId)` 才能唯一定位一场（库层有 uk_goods_session 唯一键）。
+ */
 export interface SeckillGoods {
   goodsId: number;
+  /**
+   * 场次 id。后端字段是 `Integer`，**理论可为 null**（联查投影漏字段时才会出现），
+   * 故保留 `| null` 让「后端没返回」在类型层面可见；展示与拼 URL 前必须经
+   * `sessionIdOf()` 归一成非负 number，不要直接用原始值。
+   */
+  sessionId: number | null;
   name: string;
   title: string;
   img: string;
@@ -76,6 +87,7 @@ export interface SeckillGoods {
   price: number;
   stock: number;
   priceSeckill: number;
+  /** 秒杀库存。库层无 `>= 0` 约束，可能有负数脏数据；展示前必须走 `displayStock()`。 */
   stockSeckill: number;
   startTime: string;
   endTime: string;
