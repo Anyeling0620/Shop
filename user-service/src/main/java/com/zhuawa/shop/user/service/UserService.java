@@ -113,9 +113,10 @@ public class UserService {
         userInfo.put("id", user.getId());
         userInfo.put("nickname", user.getNickname());
         userInfo.put("avatar", user.getAvatar());
-        String token = JwtUtil.createJWT(UUIDUtil.uuid(), JSON.toJSONString(userInfo), 3600000L);
+        String token = JwtUtil.createJWT(UUIDUtil.uuid(), JSON.toJSONString(userInfo), JwtUtil.JWT_TTL);
         Cookie cookie = new Cookie(COOKIE_NAME_TOKEN, token);
-        cookie.setMaxAge(3600);
+        // Cookie 的 maxAge 单位是秒，由毫秒常量统一换算，避免与 JWT 有效期错配
+        cookie.setMaxAge((int) (JwtUtil.JWT_TTL / 1000));
         cookie.setPath("/");
         response.addCookie(cookie);
         response.setHeader(COOKIE_NAME_TOKEN, token);

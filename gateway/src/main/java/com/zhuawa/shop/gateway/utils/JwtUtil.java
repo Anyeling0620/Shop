@@ -11,8 +11,8 @@ import java.util.Base64;
 import java.util.Date;
 
 public class JwtUtil {
-    //有效期
-    public static final Long JWT_TTL = 3600000L;
+    //有效期（7 天，单位：毫秒）
+    public static final Long JWT_TTL = 604800000L;
 
     //Jwt令牌加密密钥
     public static final String JWT_KEY = "1a2b3c4d";
