@@ -46,6 +46,15 @@ public class GoodsService {
      */
     private static final String NULL_MARKER = "__NULL__";
 
+    /**
+     * 批量查询时单次 IN 查询的 id 条数上限。
+     *
+     * <p>不能把几千个 id 一次性塞进 {@code IN (...)}：SQL 文本会超长（受
+     * {@code max_allowed_packet} 限制）、MySQL 优化器对超大 IN 列表也可能放弃索引。
+     * 500 是经验值——单条 SQL 长度可控，同时批次数不会太多。</p>
+     */
+    private static final int DB_BATCH_SIZE = 500;
+
     @Autowired
     GoodsDao goodsDao;
 
@@ -233,6 +242,149 @@ public class GoodsService {
         // 只写 L2，不回填 L1；是否升级到 L1 由下一次 get() 里的 HeavyKeeper 判定。
         writeCache(key, goods);
         return goods;
+    }
+
+    // TODO: 个人认为这里可能不需要去重
+    /**
+     * 批量查询商品详情：L1(getAllPresent) → L2(mget) → L3(单次 IN 查询)，回填用 pipeline。
+     *
+     * <p>与逐个调用 {@link #getGoodsById(long)} 的区别：缓存与数据库都按"批"处理，
+     * N 个 id 只需要 1 次 mget + ⌈N/500⌉ 次 IN 查询，而不是 N 次 Redis 往返 + N 次 SELECT。
+     * 这也是本方法不复用 {@link #getGoodsById(long)} 的原因——循环调用会退化成 N+1。</p>
+     *
+     * <h3>三层的行为</h3>
+     * <ul>
+     *   <li>L1：{@code CacheManager.multiGet} 内部的 getAllPresent，命中即返回并计入热点；</li>
+     *   <li>L2：未命中的 key 合并成一次 mget；命中的条目仍按 HeavyKeeper 判定是否回填 L1
+     *       （严格热点策略，与单键读一致）；</li>
+     *   <li>L3：剩下的 id 按 {@link #DB_BATCH_SIZE} 分批做 {@code IN} 查询。</li>
+     * </ul>
+     *
+     * <h3>负缓存</h3>
+     * <p>命中 {@link #NULL_MARKER} 的 id 视为"已确认不存在"，直接跳过、不再打数据库；
+     * 本轮数据库查询里查无此 id 的，同样回写 {@link #NULL_MARKER}，防止脏 id 反复穿透。
+     * 回写统一收集后一次 {@code putAll}（pipeline），且只写 L2 不回填 L1。</p>
+     *
+     * <h3>降级</h3>
+     * <p>缓存 Bean 缺失（{@code @Autowired(required = false)}）或缓存读写抛异常时，
+     * 直接退化为"只用数据库批量查"，缓存不可用不影响主流程。</p>
+     *
+     * @param ids 商品 id 集合，允许为 null/empty（返回空 Map）
+     * @return goodsId -> Goods，<b>只含真实存在的商品</b>（缺失的 id 不出现在 Map 里）；
+     *         顺序与入参去重后的顺序一致
+     */
+    public Map<Long, Goods> getGoodsByIds(Collection<Long> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        // 去重 + 保序：调用方可能传入重复 id，重复会让 mget 的下标配对失去意义
+        Set<Long> orderedIds = new LinkedHashSet<>(ids.size());
+        for (Long id : ids) {
+            if (id != null) {
+                orderedIds.add(id);
+            }
+        }
+        if (orderedIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        Map<Long, Goods> result = new LinkedHashMap<>(orderedIds.size());
+        // 待回源 L3 的 id
+        Set<Long> toLoad = new LinkedHashSet<>();
+
+        // 缓存不可用时整批回源，省掉 key 拼接与 multiGet
+        if (cacheManager == null || objectMapper == null) {
+            toLoad.addAll(orderedIds);
+        } else {
+            Map<String, Long> keyToId = new LinkedHashMap<>(orderedIds.size());
+            for (Long id : orderedIds) {
+                keyToId.put(CacheKeys.goodsDetailHashKey(id), id);
+            }
+
+            Map<String, String> cached = Collections.emptyMap();
+            try {
+                Map<String, String> got = cacheManager.multiGet(keyToId.keySet());
+                if (got != null) {
+                    cached = got;
+                }
+            } catch (Exception e) {
+                // 缓存读失败 → 全部按未命中回源；返回值仍是完整正确的
+                log.warn("批量读取商品缓存失败，降级回源 MySQL ids 数量={}", orderedIds.size(), e);
+                cached = Collections.emptyMap();
+            }
+
+            for (Map.Entry<String, Long> entry : keyToId.entrySet()) {
+                String key = entry.getKey();
+                Long id = entry.getValue();
+                String json = cached.get(key);
+                if (json == null) {
+                    // 三级都没命中，回源
+                    toLoad.add(id);
+                    continue;
+                }
+                if (NULL_MARKER.equals(json)) {
+                    // 负缓存命中：确认过不存在，不再打 MySQL，也不放进结果
+                    continue;
+                }
+                Goods goods = deserialize(key, json);
+                if (goods == null) {
+                    // 反序列化失败按未命中处理，避免脏缓存把请求卡死
+                    toLoad.add(id);
+                    continue;
+                }
+                result.put(id, goods);
+            }
+        }
+
+        // 待回写 L2 的条目：查到的写商品，查不到的写空值标记（负缓存）
+        Map<String, Object> toWriteCache = new LinkedHashMap<>();
+
+        List<Long> pending = new ArrayList<>(toLoad);
+        for (int from = 0; from < pending.size(); from += DB_BATCH_SIZE) {
+            List<Long> batchIds = pending.subList(from, Math.min(from + DB_BATCH_SIZE, pending.size()));
+
+            Example example = new Example(Goods.class);
+            example.createCriteria().andIn("id", batchIds);
+            List<Goods> found = goodsDao.selectByExample(example);
+
+            Set<Long> foundIds = new HashSet<>(batchIds.size());
+            if (found != null) {
+                for (Goods goods : found) {
+                    if (goods == null || goods.getId() == null) {
+                        continue;
+                    }
+                    foundIds.add(goods.getId());
+                    result.put(goods.getId(), goods);
+                    toWriteCache.put(CacheKeys.goodsDetailHashKey(goods.getId()), goods);
+                }
+            }
+            for (Long id : batchIds) {
+                if (!foundIds.contains(id)) {
+                    toWriteCache.put(CacheKeys.goodsDetailHashKey(id), NULL_MARKER);
+                }
+            }
+        }
+
+        // 统一回填：pipeline 一次写完，只写 L2（严格热点策略由 CacheManager 保证）。
+        // cacheManager 为 null（缓存 Bean 未装配）时必须跳过，否则每请求一次 NPE 被 catch 成 warn 噪音。
+        if (cacheManager != null && !toWriteCache.isEmpty()) {
+            try {
+                cacheManager.putAll(toWriteCache);
+            } catch (Exception e) {
+                log.warn("批量回写商品缓存失败，不影响返回结果 数量={}", toWriteCache.size(), e);
+            }
+        }
+
+        // 按入参去重后的顺序重排，让调用方拿到的 Map 顺序可预期
+        Map<Long, Goods> ordered = new LinkedHashMap<>(result.size());
+        for (Long id : orderedIds) {
+            Goods goods = result.get(id);
+            if (goods != null) {
+                ordered.put(id, goods);
+            }
+        }
+        return ordered;
     }
 
     /**

@@ -6,10 +6,23 @@ import com.github.benmanes.caffeine.cache.Cache;
 import com.zhuawa.shop.goods.cache.heavykeeper.TopK;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.redis.connection.RedisConnection;
+import org.springframework.data.redis.connection.RedisStringCommands.SetOption;
+import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.types.Expiration;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -29,10 +42,14 @@ import java.util.concurrent.TimeUnit;
  *
  * <p>因此这里统一使用 {@link StringRedisTemplate} + Jackson 将对象序列化为 JSON 字符串存取。</p>
  *
- * <p>两种存取形态（t4 商品详情走单键形态）：</p>
+ * <p>三种存取形态（t4 商品详情走单键形态）：</p>
  * <ul>
  *   <li><b>单键</b>：{@code goods:detail:{goodsId}} → JSON 字符串，见
  *       {@link #get(String)} / {@link #put(String, Object)} / {@link #evict(String)}；</li>
+ *   <li><b>单键批量</b>：一次性按 key 集合读写同一形态的数据，见
+ *       {@link #multiGet(Collection)}（L1 getAllPresent + L2 单次 mget）与
+ *       {@link #putAll(Map)}（pipeline 批量写 L2）；批量读命中的条目与单键读
+ *       走<b>同一套</b> HeavyKeeper 热点准入，不会因为"批"就绕过 L1 准入；</li>
  *   <li><b>Hash</b>：hashKey + fieldKey 二级结构，见
  *       {@link #get(String, String)} / {@link #putIfPresent(String, String, Object)} /
  *       {@link #evictLocal(String, String)}。</li>
@@ -194,6 +211,152 @@ public class CacheManager {
             redisTemplate.delete(key);
         } catch (Exception e) {
             log.warn("删除 redis key 失败 key={}", key, e);
+        }
+    }
+
+    /**
+     * 批量读取单键缓存：L1(getAllPresent) → L2(mget)，<b>只返回命中的部分</b>。
+     *
+     * <p>与单键 {@link #get(String)} 的差异只在"网络往返次数"，语义完全一致：
+     * L1 命中直接返回（并计入一次热点访问）；L1 未命中的 key 合并成一次 mget 打 L2；
+     * L2 命中的条目仍然要过 {@code hotKeyDetector} 的准入门槛，是热 key 才回填 L1。</p>
+     *
+     * <h3>mget 的结果必须按索引对齐</h3>
+     * <p>Spring Data Redis 的 {@code opsForValue().multiGet(Collection)} 返回的 List
+     * <b>与入参长度相同、顺序一一对应</b>，不存在的 key 对应位置是 {@code null}——
+     * 它并不会"只返回命中的项"。因此这里只能按下标 {@code missedList.get(i)} 配对，
+     * 任何"返回值就是命中列表"的假设都会把 A key 的值错配给 B key。</p>
+     *
+     * <p>降级语义：Redis 抛异常时只返回 L1 命中的部分，不向上抛——
+     * 调用方会把其余 key 当作未命中回源 L3，主流程不受影响。</p>
+     *
+     * @param keys 完整 redis key 集合，允许 null/empty
+     * @return key -> JSON 字符串，只含命中的 key（永不为 null）
+     */
+    public Map<String, String> multiGet(Collection<String> keys) {
+        if (keys == null || keys.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        // 结果用 LinkedHashMap 保序，便于调用方与入参顺序对账、也便于日志排查
+        Map<String, String> result = new LinkedHashMap<>(keys.size());
+        // 剩余待查 L2 的 key：LinkedHashSet 去重且保序，避免重复 key 让 mget 结果错位
+        Set<String> missed = new LinkedHashSet<>(keys.size());
+        for (String key : keys) {
+            if (key != null) {
+                missed.add(key);
+            }
+        }
+        if (missed.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        // 1. L1：getAllPresent 只返回命中的项；Caffeine 不允许存 null，所以 value 必非 null
+        Map<String, Object> localHits = localCache.getAllPresent(missed);
+        for (Map.Entry<String, Object> entry : localHits.entrySet()) {
+            Object value = entry.getValue();
+            result.put(entry.getKey(), value instanceof String ? (String) value : String.valueOf(value));
+            missed.remove(entry.getKey());
+            // L1 命中同样计入一次热点访问，与单键 get() 保持一致
+            hotKeyDetector.add(entry.getKey(), 1);
+        }
+        if (missed.isEmpty()) {
+            return result;
+        }
+
+        // 2. L2：一次 mget 取回全部未命中 key（顺序与 missedList 严格对应）
+        try {
+            List<String> missedList = new ArrayList<>(missed);
+            List<String> redisValues = redisTemplate.opsForValue().multiGet(missedList);
+            if (redisValues == null) {
+                return result;
+            }
+            int size = Math.min(missedList.size(), redisValues.size());
+            for (int i = 0; i < size; i++) {
+                String value = redisValues.get(i);
+                if (value == null) {
+                    // 该 key 在 Redis 侧不存在（或已过期），保持未命中语义
+                    continue;
+                }
+                String key = missedList.get(i);
+                result.put(key, value);
+
+                // 3. 命中也走同一套热点准入：是热 key 才回填 L1（严格热点策略）
+                TopK.AddResult addResult = hotKeyDetector.add(key, 1);
+                if (addResult != null && addResult.hotKey()) {
+                    localCache.put(key, value);
+                }
+            }
+            return result;
+        } catch (Exception e) {
+            log.warn("批量读取缓存失败，降级为只返回本地命中部分，keys 数量={}", missed.size(), e);
+            return result;
+        }
+    }
+
+    /**
+     * 批量写入单键缓存（只写 L2，<b>不回填 L1</b>），使用 pipeline 减少网络往返。
+     *
+     * <p>与 {@link #put(String, Object)} 一样遵循严格热点策略：批量回源之后的填充只落
+     * Redis，L1 的准入永远由读路径的 HeavyKeeper 判定，避免一批长尾/一次性 key
+     * 趁着回源把本地缓存挤满。</p>
+     *
+     * <p>用 pipeline 而不是逐条 set：N 次往返会被压成 1 次，
+     * 批量详情场景下 N 可能是几百。这里用 {@link RedisCallback} 而非
+     * {@code SessionCallback}，是为了直接拿到原生 {@link RedisConnection}
+     * 去调 {@code set(byte[], byte[], Expiration, SetOption)} 这个重载
+     * （Spring Boot 2.5 / Spring Data Redis 2.5 上该重载存在）。</p>
+     *
+     * <p>TTL 由 {@code zhuawa.cache.redis-expire-seconds}（默认 1800s）统一决定。</p>
+     *
+     * <p>容错：单条序列化失败只跳过该条并 warn，不影响同批其他 key；
+     * 整批失败（Redis 不可用）也只 warn，不向上抛。</p>
+     *
+     * @param entries key -> 待缓存对象，允许 null/empty
+     */
+    public void putAll(Map<String, Object> entries) {
+        if (entries == null || entries.isEmpty()) {
+            return;
+        }
+        final long ttl = properties.getRedisExpireSeconds();
+        if (ttl <= 0L) {
+            log.warn("redis 过期时间配置非法({}s)，跳过批量写入", ttl);
+            return;
+        }
+
+        // 先做序列化：单条失败不影响其他 key，故在循环内单独 try/catch
+        final Map<byte[], byte[]> serialized = new LinkedHashMap<>(entries.size());
+        for (Map.Entry<String, Object> entry : entries.entrySet()) {
+            String key = entry.getKey();
+            Object value = entry.getValue();
+            if (key == null || value == null) {
+                continue;
+            }
+            try {
+                String json = value instanceof String ? (String) value : objectMapper.writeValueAsString(value);
+                serialized.put(key.getBytes(StandardCharsets.UTF_8), json.getBytes(StandardCharsets.UTF_8));
+            } catch (Exception e) {
+                log.warn("批量写入缓存时单条序列化失败，已跳过 key={}", key, e);
+            }
+        }
+        if (serialized.isEmpty()) {
+            return;
+        }
+
+        try {
+            redisTemplate.executePipelined(new RedisCallback<Object>() {
+                @Override
+                public Object doInRedis(RedisConnection connection) {
+                    for (Map.Entry<byte[], byte[]> entry : serialized.entrySet()) {
+                        connection.set(entry.getKey(), entry.getValue(),
+                                Expiration.seconds(ttl), SetOption.upsert());
+                    }
+                    // pipeline 回调必须返回 null，结果由 executePipelined 统一收集
+                    return null;
+                }
+            });
+        } catch (Exception e) {
+            log.warn("批量写入缓存失败，entries 数量={}", serialized.size(), e);
         }
     }
 

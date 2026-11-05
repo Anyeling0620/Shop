@@ -7,9 +7,15 @@ package com.zhuawa.shop.goods.cache;
  * 保持"模块:业务:标识"的一致格式，但前缀改用 {@code goods:detail:}，
  * 避免与秒杀侧的 key 混在一起（同一套 redis，靠前缀区分归属）。</p>
  *
- * <p>Redis 侧使用 Hash 结构：hashKey = {@link #GOODS_DETAIL_PREFIX} + goodsId，
- * fieldKey 目前固定为 {@link #DETAIL_FIELD}，为后续扩展（如加销量、加版本号字段）
- * 留出同一商品多字段共存的空间。</p>
+ * <p><b>实际使用的结构是单键 String</b>：{@code goods:detail:{goodsId}} → JSON 字符串，
+ * 由 {@code CacheManager} 的单键形态方法（{@code get/put/evict/multiGet/putAll}）读写。
+ * 批量也是同一批 key 的 String 形态（mget / pipeline set），不存在 Hash 字段。</p>
+ *
+ * <p>下面的 {@link #DETAIL_FIELD} 与 {@link #localKey(String, String)} 属于 <b>Hash 形态的预留</b>：
+ * {@code CacheManager} 里确实实现了 hashKey + fieldKey 的存取方法，但商品详情当前<b>没有</b>
+ * 业务调用方使用它们。保留是为了兼容已存在的代码与将来可能的多字段扩展
+ * （例如在同一个商品 hash 下再存销量、版本号），<b>不要删除</b>；但也不要误以为
+ * 商品详情缓存走的是 Hash——排障时请以 {@code goods:detail:{goodsId}} 这个单键为准。</p>
  *
  * @author cache-dev
  */
