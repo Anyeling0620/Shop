@@ -12,6 +12,15 @@ export interface LoginActionState {
 }
 
 /**
+ * token cookie 的有效期（秒）。
+ *
+ * 必须与后端 `JwtUtil.JWT_TTL` 对齐（后端 604800000 毫秒 = 7 天）。
+ * 两边不一致时取更短的那个生效：如果这里留着 3600，
+ * 后端 token 还没过期，浏览器就已经把 cookie 删了，表现为「1 小时就掉登录」。
+ */
+const TOKEN_COOKIE_MAX_AGE_SECONDS = 7 * 24 * 60 * 60; // 604800
+
+/**
  * 登录 Server Action。
  *
  * 后端登录流程（读源码确认）：
@@ -49,7 +58,10 @@ export async function loginAction(_prev: LoginActionState, formData: FormData): 
     httpOnly: true,
     sameSite: 'lax',
     path: '/',
-    maxAge: 3600,
+    // 必须与后端 JwtUtil.JWT_TTL 保持一致（当前 7 天）。
+    // 若这里短于后端，token 还没过期浏览器就把 cookie 删了，用户仍会"1 小时就要重登"，
+    // 后端改多长都没意义。后端单位是毫秒，cookie 这里是秒。
+    maxAge: TOKEN_COOKIE_MAX_AGE_SECONDS,
     // 后端是 http，线上部署到 https 时应打开 secure
     secure: false,
   });
