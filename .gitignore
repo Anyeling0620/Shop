@@ -30,6 +30,8 @@ Thumbs.db
 .ai-memory/
 docs/
 backup/
+.run/
+docx/
 
 # ---------- 本地调试与探测脚本（不入库） ----------
 .workbuddy/
