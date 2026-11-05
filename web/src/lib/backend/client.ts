@@ -91,8 +91,12 @@ export async function backendRequest<T>(opts: RequestOptions): Promise<T> {
       headers,
       body,
       signal: controller.signal,
-      cache: cache ?? 'no-store',
-      ...(revalidate !== undefined ? { next: { revalidate } } : {}),
+      // ⚠️ cache 与 next.revalidate 互斥，不能同时传。
+      // 两者都传时 Next 会告警「only one should be specified」，而且 cache: 'no-store'
+      // 的优先级会压过 revalidate —— 等于把调用方要的 ISR 缓存彻底废掉，
+      // 每次渲染都真的打一次后端（表现为日志疯狂刷 category 请求）。
+      // 所以：要 ISR 就只传 next.revalidate，不要缓存才显式传 cache。
+      ...(revalidate !== undefined ? { next: { revalidate } } : { cache: cache ?? 'no-store' }),
     });
   } catch (err) {
     throw new BackendError(path, -1, `无法连接 ${service} 服务：${(err as Error).message}`);
