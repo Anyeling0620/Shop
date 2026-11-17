@@ -7,7 +7,6 @@
       <h2>商品分类</h2>
       <ul id="catFilter">
         <li><button type="button" data-cat="" aria-pressed="true">全部</button></li>
-        __CATLINKS__
       </ul>
       <h2>价格区间</h2>
       <ul id="priceFilter">
@@ -21,7 +20,7 @@
 
     <div class="listPage__main">
       <div class="listPage__bar">
-        <p id="listCount">共 __COUNT__ 件商品</p>
+        <p id="listCount">共 0 件商品</p>
         <label class="sort">排序
           <select id="sortBy">
             <option value="default">综合</option>
@@ -30,8 +29,9 @@
           </select>
         </label>
       </div>
-      <ul class="rows__grid" id="productGrid">__CARDS__</ul>
+      <ul class="rows__grid" id="productGrid"></ul>
       <p class="listPage__empty" id="listEmpty" hidden>没有符合条件的商品，换个筛选条件试试。</p>
+      <nav class="pager" id="listPager" aria-label="分页"></nav>
     </div>
   </div>
 </section>
