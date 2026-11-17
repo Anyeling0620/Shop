@@ -1,76 +1,85 @@
-<div class="wrap crumbs"><a href="/index.html">首页</a><span>/</span><a href="/list/index.html">全部商品</a><span>/</span><span>__CATEGORY__</span></div>
+<div class="wrap crumbs" id="pdpCrumbs">
+  <a href="/index.html">首页</a><span>/</span><a href="/list/index.html">全部商品</a>
+</div>
 
-<section class="wrap pdp">
-  <div class="pdp__gallery">
-    <ul class="pdp__thumbs" aria-label="商品图片">
-      __THUMBS__
-    </ul>
-    <figure class="pdp__main"><img id="pdpMain" src="__MAIN__" alt="__NAME__" width="420" height="420"></figure>
-  </div>
+<div id="pdpRoot">
+  <section class="wrap pdp">
+    <figure class="pdp__main"><img id="pdpMain" src="/assets/p-1.svg" alt="" width="420" height="420"></figure>
 
-  <div class="pdp__info">
-    <h1>__NAME__</h1>
-    <p class="pdp__sub">__SPEC__</p>
-    <div class="pdp__price">
-      <span>￥</span><b id="pdpPrice">__PRICE__</b>
-      __LISTHTML__
-    </div>
-    <ul class="pdp__chips">
-      <li><span class="chip chip--coupon">100 元券</span></li>
-      <li><span class="chip chip--trade">以旧换新</span></li>
-      <li><span class="chip">教育优惠再减</span></li>
-    </ul>
-    <ul class="pdp__highlights">
-      __HIGHLIGHTS__
-    </ul>
-    <div class="pdp__buy">
-      <div class="qty" role="group" aria-label="数量">
-        <button type="button" data-qty="-1" aria-label="减少">−</button>
-        <output id="pdpQty">1</output>
-        <button type="button" data-qty="1" aria-label="增加">+</button>
+    <div class="pdp__info">
+      <div class="card--skeleton" id="pdpSkeleton" aria-hidden="true">
+        <p class="sk-line"></p><p class="sk-line"></p><p class="sk-line sk-line--short"></p>
       </div>
-      <button class="btn btn--buy" type="button" id="addCart" data-slug="__SLUG__" data-name="__NAME__" data-price="__PRICE__">加入购物车</button>
-      <button class="btn btn--ghost" type="button" id="buyNow" data-slug="__SLUG__">立即购买</button>
+      <div id="pdpBody" hidden>
+        <h1 id="pdpName"></h1>
+        <p class="pdp__sub" id="pdpSpec"></p>
+        <div class="pdp__price"><b id="pdpPrice"></b></div>
+        <ul class="pdp__highlights" id="pdpHighlights"></ul>
+        <div class="pdp__buy">
+          <div class="qty" role="group" aria-label="数量">
+            <button type="button" data-qty="-1" aria-label="减少">−</button>
+            <output id="pdpQty">1</output>
+            <button type="button" data-qty="1" aria-label="增加">+</button>
+          </div>
+          <button class="btn btn--buy" type="button" id="addCart" disabled>加入购物车</button>
+          <button class="btn btn--ghost" type="button" id="buyNow" disabled>立即购买</button>
+        </div>
+        <p class="pdp__stock" id="pdpStock"></p>
+        <ul class="pdp__services">
+          <li><b>正品保障</b><small>官方授权 · 全国联保</small></li>
+          <li><b>极速发货</b><small>现货商品 24 小时内发出</small></li>
+          <li><b>无忧退换</b><small>7 天无理由 · 上门取件</small></li>
+          <li><b>专业服务</b><small>在线客服 · 到店维修</small></li>
+        </ul>
+      </div>
     </div>
-    <p class="pdp__stock">现货 · 预计 24 小时内发出 · 全国联保</p>
-    <ul class="pdp__services">
-      __SERVICES__
-    </ul>
-  </div>
-</section>
+  </section>
 
-<section class="wrap pdp__tabs">
-  <div class="pdp__tabbar" role="tablist">
-    <button type="button" role="tab" aria-selected="true" data-tab="detail">商品详情</button>
-    <button type="button" role="tab" aria-selected="false" data-tab="spec">规格参数</button>
-    <button type="button" role="tab" aria-selected="false" data-tab="review">用户评价</button>
-  </div>
+  <section class="wrap pdp__tabs" id="pdpTabs" hidden>
+    <div class="pdp__tabbar" role="tablist">
+      <button type="button" role="tab" aria-selected="true" data-tab="detail">商品详情</button>
+      <button type="button" role="tab" aria-selected="false" data-tab="spec">规格参数</button>
+      <button type="button" role="tab" aria-selected="false" data-tab="review">用户评价</button>
+    </div>
 
-  <div class="pdp__pane" data-pane="detail">
-    <div class="pdp__copy">
-      <h2>为日常使用设计</h2>
-      <p>示例文案：这一栏展示商品详情图文。结构包含大图、要点列表与采购须知，内容为演示数据，不代表真实产品参数。</p>
-      <ul>
-        <li>外观：简约线条，兼顾商务与日常场景。</li>
-        <li>性能：满足办公、学习与轻度娱乐需求。</li>
-        <li>服务：支持上门取件、延保与以旧换新。</li>
+    <div class="pdp__pane" data-pane="detail">
+      <div class="pdp__copy">
+        <h2>商品详情</h2>
+        <p id="pdpFullName"></p>
+        <p id="pdpMeta"></p>
+      </div>
+    </div>
+
+    <div class="pdp__pane" data-pane="spec" hidden>
+      <table class="pdp__specs">
+        <tbody id="pdpSpecRows"></tbody>
+      </table>
+    </div>
+
+    <div class="pdp__pane" data-pane="review" hidden>
+      <p class="pdp__notice">以下为示例评价，后端暂未提供评价接口</p>
+      <ul class="pdp__reviews">
+        <li>
+          <p class="pdp__stars" aria-label="5 星">★★★★★</p>
+          <p>示例评价：包装完好，开机速度快，日常办公完全够用。</p>
+          <small>示例用户 · 2026-01-12</small>
+        </li>
+        <li>
+          <p class="pdp__stars" aria-label="4 星">★★★★☆</p>
+          <p>示例评价：屏幕观感不错，续航符合预期，物流也快。</p>
+          <small>示例用户 · 2026-02-03</small>
+        </li>
+        <li>
+          <p class="pdp__stars" aria-label="5 星">★★★★★</p>
+          <p>示例评价：同价位里配置均衡，售后服务响应及时。</p>
+          <small>示例用户 · 2026-03-21</small>
+        </li>
       </ul>
     </div>
-    <div class="pdp__detailArt" aria-hidden="true"><img src="__DETAILART__" alt="" width="720" height="300"></div>
-  </div>
+  </section>
 
-  <div class="pdp__pane" data-pane="spec" hidden>
-    <table class="pdp__specs">
-      <tbody>__SPECROWS__</tbody>
-    </table>
-  </div>
-
-  <div class="pdp__pane" data-pane="review" hidden>
-    <ul class="pdp__reviews">__REVIEWS__</ul>
-  </div>
-</section>
-
-<section class="wrap pdp__related">
-  <h2 class="rows__title">同类推荐</h2>
-  <ul class="rows__grid">__RELATED__</ul>
-</section>
+  <section class="wrap pdp__related" id="pdpRelatedSection" hidden>
+    <h2 class="rows__title">同类推荐</h2>
+    <ul class="rows__grid" id="pdpRelated"></ul>
+  </section>
+</div>
