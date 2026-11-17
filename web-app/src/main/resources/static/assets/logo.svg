@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 178 36" role="img" aria-label="NOVA store">
+  <rect x="0" y="3" width="30" height="30" rx="7" fill="#e2231a"/>
+  <text x="15" y="24" font-family="Microsoft YaHei, sans-serif" font-size="19" font-weight="700" fill="#fff" text-anchor="middle">N</text>
+  <text x="40" y="25" font-family="Microsoft YaHei, sans-serif" font-size="18" font-weight="700" fill="#333">NOVA</text>
+  <text x="96" y="25" font-family="Microsoft YaHei, sans-serif" font-size="12" fill="#9a9a9a">store</text>
+</svg>
