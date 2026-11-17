@@ -55,6 +55,8 @@ public class SeckillOrderService {
         Order order = new Order();
         order.setUserId(userId);
         order.setGoodsId(goods.getGoodsId());
+        // 订单必须落在自己那一场，否则多场次下所有订单都记成 0 号场
+        order.setSessionId(sessionId);
         order.setGoodsName(goods.getName());
         order.setGoodsCount(1);
         order.setGoodsPrice(goods.getPriceSeckill());

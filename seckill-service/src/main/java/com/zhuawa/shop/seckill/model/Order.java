@@ -17,6 +17,11 @@ public class Order {
     private BigDecimal goodsPrice;
     private Integer createFrom;
     private Integer status;
+    /**
+     * 场次编号。表里早就有这一列（默认 0），但 insertOrder 一直没写，
+     * 导致所有秒杀订单的 session_id 恒为 0 —— 多场次下无法判断订单属于哪一场。
+     */
+    private Integer sessionId;
     private Date createTime;
     private Date payTime;
     private Date updateTime;
@@ -91,6 +96,14 @@ public class Order {
 
     public void setStatus(Integer status) {
         this.status = status;
+    }
+
+    public Integer getSessionId() {
+        return sessionId;
+    }
+
+    public void setSessionId(Integer sessionId) {
+        this.sessionId = sessionId;
     }
 
     public Date getCreateTime() {
