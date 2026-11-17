@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>购物车 · NOVA 商城</title>
+<meta name="description" content="NOVA 商城前台，商品与订单数据来自本地微服务后端。">
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../assets/site.css">
+<link rel="canonical" href="/cart/index.html">
+</head>
+<body class="page--cart">
+
+<a class="skip" href="#main">跳到主要内容</a>
+<div class="utility">
+  <div class="wrap utility__in">
+    <ul class="utility__left">
+      <li><a href="/index.html">首页</a></li>
+      <li><a href="/list/index.html">全部商品</a></li>
+      <li><a href="/seckill/index.html">限时秒杀</a></li>
+    </ul>
+    <ul class="utility__right">
+      <li><a href="/list/index.html">全部商品</a></li>
+      <li><a href="/cart/index.html">购物车</a></li>
+      <li id="navLogin"><a class="utility__login" href="/login/index.html?next=">登录</a></li>
+      <li id="navAccount" class="utility__account" hidden></li>
+      <li><a class="utility__cart" href="/cart/index.html" aria-label="购物车">
+        <img src="../assets/cart.svg" width="20" height="20" alt="">
+        <span class="utility__count" id="cartCount" hidden>0</span>
+      </a></li>
+    </ul>
+  </div>
+</div>
+<header class="masthead">
+  <div class="wrap masthead__in">
+    <a class="brand" href="/index.html" aria-label="商城首页">
+      <span class="brand__mark" aria-hidden="true">N</span>
+      <span class="brand__name">NOVA<em>store</em></span>
+    </a>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="mainnav">
+      <span></span><span></span><span></span><span class="sr">导航菜单</span>
+    </button>
+    <nav class="mainnav" id="mainnav" aria-label="主导航"><ul><li><a href="/index.html">首页</a></li><li><a href="/page/newarrival/xpzx.html">新品</a></li><li><a href="/seckill/index.html">限时秒杀</a></li><li><a href="/list/index.html">全部商品</a></li><li><a href="/page/xs/jyth.html">教育特惠</a></li></ul></nav>
+    <form class="search" action="/list/index.html" method="get" role="search">
+      <label class="sr" for="q">搜索商品</label>
+      <input id="q" type="search" name="q" placeholder="搜索商品 / 型号">
+      <button type="submit" aria-label="搜索">
+        <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M11 11l4 4" stroke="currentColor" stroke-width="1.6"/></svg>
+      </button>
+    </form>
+  </div>
+</header>
+<main id="main">
+<div class="wrap crumbs"><a href="/index.html">首页</a><span>/</span><span>购物车</span></div>
+
+<section class="wrap cartPage">
+  <h1 class="listPage__title">购物车</h1>
+  <div id="cartEmpty" class="cartPage__empty" style="display:none">
+    <p id="cartEmptyText">购物车还是空的。</p>
+    <a class="btn" href="/list/index.html" id="cartEmptyAction">去逛逛</a>
+  </div>
+
+  <div id="cartBody" hidden>
+    <table class="cartTable">
+      <thead>
+        <tr>
+          <th><label class="sr" for="cartCheckAll">全选</label><input type="checkbox" id="cartCheckAll" checked></th>
+          <th>商品</th><th>单价</th><th>数量</th><th>小计</th><th><span class="sr">操作</span></th>
+        </tr>
+      </thead>
+      <tbody id="cartRows"></tbody>
+    </table>
+    <div class="cartPage__foot">
+      <button type="button" class="cartPage__clear" id="cartClear">清空购物车</button>
+      <p>合计：<b id="cartTotal">￥0.00</b></p>
+      <button type="button" class="btn btn--buy" id="checkout">去结算</button>
+    </div>
+    <p class="cartPage__note" id="cartNote" role="status"></p>
+  </div>
+</section>
+
+</main>
+
+<footer class="foot">
+  <div class="foot__band">
+    <div class="wrap foot__band-in">
+      <div class="foot__promise">
+        <span class="foot__badge" aria-hidden="true"></span>
+        <p><strong>正品保障</strong><small>官方授权 · 全国联保</small></p>
+      </div>
+      <div class="foot__promise">
+        <span class="foot__badge foot__badge--2" aria-hidden="true"></span>
+        <p><strong>极速发货</strong><small>现货商品 24 小时内发出</small></p>
+      </div>
+      <div class="foot__promise">
+        <span class="foot__badge foot__badge--3" aria-hidden="true"></span>
+        <p><strong>无忧退换</strong><small>7 天无理由 · 上门取件</small></p>
+      </div>
+      <div class="foot__promise">
+        <span class="foot__badge foot__badge--4" aria-hidden="true"></span>
+        <p><strong>专业服务</strong><small>在线客服 · 到店维修</small></p>
+      </div>
+    </div>
+  </div>
+  <div class="foot__links">
+    <div class="wrap foot__links-in">
+      <div class="foot__col"><p class="foot__title">购物指南</p><ul><li><a href="#">购买流程</a></li><li><a href="#">注册登录</a></li><li><a href="#">商品评价</a></li></ul></div><div class="foot__col"><p class="foot__title">配送方式</p><ul><li><a href="#">配送方式</a></li><li><a href="#">配送信息</a></li><li><a href="#">签收规则</a></li><li><a href="#">物流查询</a></li></ul></div><div class="foot__col"><p class="foot__title">支付方式</p><ul><li><a href="#">分期支付</a></li><li><a href="#">支付方式</a></li><li><a href="#">支付问题</a></li></ul></div><div class="foot__col"><p class="foot__title">订单信息</p><ul><li><a href="#">订单信息</a></li><li><a href="#">发票信息</a></li><li><a href="#">激活查询</a></li></ul></div><div class="foot__col"><p class="foot__title">售后服务</p><ul><li><a href="#">售后总则</a></li><li><a href="#">在线客服</a></li><li><a href="#">服务入口</a></li><li><a href="#">热门问题</a></li></ul></div><div class="foot__col"><p class="foot__title">其他说明</p><ul><li><a href="#">服务承诺</a></li><li><a href="#">账户安全</a></li><li><a href="#">购买须知</a></li><li><a href="#">环境信息</a></li></ul></div>
+      <div class="foot__phone">
+        <p class="foot__title">服务热线</p>
+        <h2>400-166-6666</h2>
+        <p class="foot__hours">周一至周日 9:00–21:00</p>
+        <a class="foot__qr" href="#" aria-label="扫码关注">
+          <img src="../assets/qr.svg" width="72" height="72" alt="">
+        </a>
+      </div>
+    </div>
+  </div>
+  <div class="foot__legal">
+    <div class="wrap foot__legal-in">
+      <p>© 2026 NOVA 商城 · 商品与价格来自本地后端服务</p>
+      <ul>
+        <li><a href="#">法律公告</a></li>
+        <li><a href="#">隐私权政策</a></li>
+        <li><a href="#">产品安全</a></li>
+        <li><a href="#">备案号示例</a></li>
+      </ul>
+    </div>
+  </div>
+</footer>
+<script src="../assets/md5.js" defer></script>
+<script src="../assets/api.js" defer></script>
+<script src="../assets/shop-ui.js" defer></script>
+<script src="../assets/site.js" defer></script>
+<script src="../assets/pages/cart.js" defer></script>
+</body>
+</html>

@@ -21,9 +21,9 @@ public interface OrderDao {
                                  @Param("goodsId") long goodsId,
                                  @Param("sessionId") int sessionId);
 
-    @Insert("insert into `order`(user_id, goods_id, goods_name, goods_count, goods_price, " +
+    @Insert("insert into `order`(user_id, goods_id, session_id, goods_name, goods_count, goods_price, " +
             "create_from, status, create_time) values(" +
-            "#{userId}, #{goodsId}, #{goodsName}, #{goodsCount}, #{goodsPrice}, " +
+            "#{userId}, #{goodsId}, #{sessionId}, #{goodsName}, #{goodsCount}, #{goodsPrice}, " +
             "#{createFrom}, #{status}, #{createTime})")
     @SelectKey(keyColumn = "id", keyProperty = "id", resultType = long.class,
             before = false, statement = "select last_insert_id()")

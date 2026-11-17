@@ -53,8 +53,12 @@ public class CartService {
         CartItem cartItem = new CartItem();
         cartItem.setUserId(userId);
         cartItem.setGoodsId(goodsId);
+        // count <= 0 表示「从购物车移除」，删除后必须直接返回。
+        // 原实现删完继续往下走：selectOne 查不到 → 走 insert 分支，把这一行又插回来
+        // （count 是 0 或负数），购物车里于是多出一条数量为 0 的幽灵记录。
         if (count <= 0) {
             cartItemDao.delete(cartItem);
+            return;
         }
         CartItem cartItemDB = cartItemDao.selectOne(cartItem);
         if (cartItemDB == null) {

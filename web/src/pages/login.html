@@ -1,0 +1,38 @@
+<div class="acct__bar">
+  <div class="acct__bar-in">
+    <a class="acct__logo" href="/index.html" aria-label="商城首页"><img src="../assets/logo.svg" width="178" height="36" alt="NOVA store"></a>
+  </div>
+</div>
+
+<section class="acct" aria-label="会员登录">
+  <div class="wrap acct__band">
+    <div class="acct__intro">
+      <h2>登录后继续购物</h2>
+      <p>登录即可查看购物车、提交订单并参与限时秒杀。</p>
+      <ul class="acct__perks">
+        <li><b>购物车</b><span>跨设备同步，随时结算</span></li>
+        <li><b>订单</b><span>查看真实下单结果</span></li>
+        <li><b>秒杀</b><span>整点开抢，先到先得</span></li>
+      </ul>
+    </div>
+
+    <div class="acct__card">
+      <h1>会员登录</h1>
+      <p class="acct__hint" id="loginNext" hidden>登录后将返回刚才的页面继续操作。</p>
+      <p class="acct__tabs"><a href="#" aria-selected="true">账号密码登录</a></p>
+      <form id="loginForm" action="#" method="post" novalidate>
+        <div class="field">
+          <label class="sr" for="phone">手机号</label>
+          <input id="phone" name="phone" type="tel" inputmode="numeric" autocomplete="tel" placeholder="请输入手机号">
+        </div>
+        <div class="field">
+          <label class="sr" for="password">密码</label>
+          <input id="password" name="password" type="password" autocomplete="current-password" placeholder="请输入密码">
+        </div>
+        <p class="acct__err" id="loginErr" role="alert"></p>
+        <button class="acct__go" type="submit" id="loginGo">登录</button>
+      </form>
+      <p class="acct__hint-note">可用测试账号：<b>12345678901</b> / <b>123456</b></p>
+    </div>
+  </div>
+</section>
