@@ -89,14 +89,18 @@
     var sub = opts.spec || info.specs.slice(0, 3).join(' · ') || (g.categoryName || '');
     var price = opts.priceText || yuan(g.price);
     var listPrice = opts.listPriceText || '';
-    var name = opts.nameHtml || escapeHtml(info.title);
+    // ES 返回的 name 带 <font color='red'> 高亮标签，直接 escapeHtml 会把它显示成字面量。
+    // 默认走 highlight()（只放行这一个标签），调用方显式传 nameHtml 时以调用方为准。
+    var name = opts.nameHtml || highlight(info.title);
     return '<a class="card" href="' + href + '" data-id="' + escapeHtml(String(g.id)) + '">' +
       '<div class="card__media"><img src="' + goodsImage(g.image) + '" alt="" loading="lazy" width="200" height="140"></div>' +
       '<h3 class="card__title">' + name + '</h3>' +
       '<p class="card__spec">' + escapeHtml(sub) + '</p>' +
+      // 品牌/类目也可能是 ES 高亮字段（<font color='red'>手机</font>），
+      // 用 highlight() 而不是 escapeHtml()，否则页面上会直接看到标签文本。
       (g.brandName || g.categoryName
-        ? '<p class="card__tags"><span class="chip">' + escapeHtml(g.brandName || '') + '</span>' +
-          '<span class="chip">' + escapeHtml(g.categoryName || '') + '</span></p>'
+        ? '<p class="card__tags"><span class="chip">' + highlight(g.brandName || '') + '</span>' +
+          '<span class="chip">' + highlight(g.categoryName || '') + '</span></p>'
         : '') +
       '<p class="card__price"><b>' + price + '</b>' + listPrice + '</p>' +
       '</a>';

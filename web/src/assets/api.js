@@ -126,9 +126,16 @@
     return request('goods', '/goods/goods/getAllValidGoods');
   }
 
-  /** 任意层级的子类目。parentId=0 即顶级。 */
+  /**
+   * 任意层级的子类目。parentId=0 即顶级。
+   *
+   * ⚠️ 网关对 /goods/** 路由配了 StripPrefix=1，所以浏览器请求必须是
+   * /goods/goods/... 与 /goods/category/... 这种「路由前缀 + 服务内路径」的双段形式。
+   * 少写第一个 /goods 会被 strip 成 /category/**，网关无此路由 → 404。
+   * 商品接口同理：/goods/goods/get/{id}。
+   */
   function getCategories(parentId) {
-    return request('goods', '/category/getCategoriesByParentId?parentId=' + encodeURIComponent(parentId));
+    return request('goods', '/goods/category/getCategoriesByParentId?parentId=' + encodeURIComponent(parentId));
   }
 
   function getBrandsByCategory(categoryId) {

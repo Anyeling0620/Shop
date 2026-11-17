@@ -17,6 +17,11 @@ spring:
               - "http://127.0.0.1:[*]"
             # 允许所有头信息
             allowedHeaders: "*"
+            # 跨域下响应头默认对 JS 不可见（只有 CORS-safelisted 的少数几个）。
+            # 登录接口把 JWT 放在 zhuawa-shop-token 响应头，必须显式暴露，
+            # 否则前端读到的永远是 null，只能退化成依赖 cookie。
+            exposedHeaders:
+              - "zhuawa-shop-token"
             # 设置允许携带cookie
             # 为true时allowedOrigins不允许为* 会报错
             allowCredentials: true

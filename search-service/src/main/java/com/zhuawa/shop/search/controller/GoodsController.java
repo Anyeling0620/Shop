@@ -13,7 +13,9 @@ import org.springframework.web.bind.annotation.*;
 
 @Api(tags = "搜索商品模块")
 @RestController
-@CrossOrigin
+// 不要在这里加 @CrossOrigin：CORS 由网关的 globalcors 统一处理。
+// 两边都发头会让响应出现两个 Access-Control-Allow-Origin（一个具体源、一个 *），
+// 浏览器据此判定 CORS 失败（Failed to fetch），而 curl 看起来一切正常。
 @RequestMapping("/search/goods")
 public class GoodsController {
 
