@@ -2,7 +2,7 @@
   <div class="wrap na-hero__in">
     <p class="hero__eyebrow">NEW ARRIVALS · 每周更新</p>
     <h1>新品速递</h1>
-    <p>刚刚发布的整机、手机、平板与选件，这里第一时间上架。全部为示例商品，用于演示页面结构。</p>
+    <p>按上架时间实时排序，商品与价格全部来自后端在售数据。</p>
     <a class="btn" href="#rows">浏览全部新品</a>
   </div>
   <div class="na-hero__art" aria-hidden="true"></div>
@@ -10,8 +10,8 @@
 
 <nav class="na-cats" aria-label="新品分类">
   <div class="wrap">
-    <ul>
-      <!--NEWTABS-->
+    <ul id="naCats">
+      <li><a href="#rows" data-cat="" aria-current="true">全部</a></li>
     </ul>
   </div>
 </nav>
@@ -28,36 +28,23 @@
 
 <section class="na-feature">
   <div class="wrap">
-    <ul class="na-feature__grid">
-      <li><article class="na-big">
-        <div class="na-big__media" aria-hidden="true"><!--NAART--></div>
-        <h3>锐影 16 电竞本 · 首销</h3>
-        <p>Ultra 7 · 独显 12G · 32G · 1T</p>
-        <b>￥14799</b>
-      </article></li>
-      <li><article class="na-big">
-        <div class="na-big__media" aria-hidden="true"><!--NAART--></div>
-        <h3>轻羽 14 轻薄本 · 首销</h3>
-        <p>酷睿 5 · 12G · 512G · 1.1kg</p>
-        <b>￥4399</b>
-      </article></li>
-      <li><article class="na-big">
-        <div class="na-big__media" aria-hidden="true"><!--NAART--></div>
-        <h3>简行 14+ 全能本 · 首销</h3>
-        <p>Ultra 7 · 32G · 1T · 2.8K</p>
-        <b>￥12999</b>
-      </article></li>
+    <ul class="na-feature__grid" id="naFeature">
+      <li><article class="na-big"><div class="na-big__media"></div><h3>加载中…</h3><p></p><b></b></article></li>
+      <li><article class="na-big"><div class="na-big__media"></div><h3>加载中…</h3><p></p><b></b></article></li>
+      <li><article class="na-big"><div class="na-big__media"></div><h3>加载中…</h3><p></p><b></b></article></li>
     </ul>
   </div>
 </section>
 
 <div class="wrap">
   <ul class="na-promos">
-    <li><a class="na-promo" href="#"><strong>新品预约 · 享 6 期免息</strong><small>预约成功后开售当天短信提醒</small></a></li>
-    <li><a class="na-promo" href="#"><strong>以旧换新 · 旧机抵 800</strong><small>线上估价，上门回收</small></a></li>
+    <li><a class="na-promo" href="#rows"><strong>新品预约 · 开售提醒</strong><small>预约成功后开售当天短信提醒</small></a></li>
+    <li><a class="na-promo" href="#rows"><strong>以旧换新 · 线上估价</strong><small>线上估价，上门回收</small></a></li>
   </ul>
 </div>
 
 <div class="wrap" id="rows">
-  <!--NEWROWS-->
+  <ul class="rows__grid" id="naRows"></ul>
+  <p id="naStatus" hidden></p>
+  <p style="text-align:center;margin:22px 0 0"><button class="btn btn--ghost" type="button" id="naMore" hidden>加载更多</button></p>
 </div>

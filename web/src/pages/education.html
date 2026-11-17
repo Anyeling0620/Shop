@@ -12,7 +12,14 @@
 <nav class="edu-links" aria-label="教育专区入口">
   <div class="wrap">
     <ul>
-      <!--EDULINKS-->
+      <li><a href="/list/index.html?category=%E6%89%8B%E6%9C%BA"><span class="ico" aria-hidden="true"></span>手机</a></li>
+      <li><a href="/list/index.html?category=%E4%BC%91%E9%97%B2%E9%9E%8B"><span class="ico" aria-hidden="true"></span>休闲鞋</a></li>
+      <li><a href="/list/index.html?category=%E5%B9%B3%E6%9D%BF%E7%94%B5%E8%A7%86"><span class="ico" aria-hidden="true"></span>平板电视</a></li>
+      <li><a href="#edu-rows"><span class="ico" aria-hidden="true"></span>教育特惠商品</a></li>
+      <li><a href="/page/newarrival/xpzx.html"><span class="ico" aria-hidden="true"></span>新品速递</a></li>
+      <li><a href="/seckill/index.html"><span class="ico" aria-hidden="true"></span>限时秒杀</a></li>
+      <li><a href="/list/index.html"><span class="ico" aria-hidden="true"></span>全部商品</a></li>
+      <li><a href="#faq"><span class="ico" aria-hidden="true"></span>常见问题</a></li>
     </ul>
   </div>
 </nav>
@@ -40,20 +47,22 @@
   </ul>
 </section>
 
-<section class="wrap edu-sec">
-  <div class="edu-sec__head"><h2>按品类挑选</h2><p>四大品类，热门机型一屏看全</p></div>
-  <div class="edu-blocks-wrap">
-    <button class="edu-arrow edu-arrow--prev" type="button" aria-label="上一组品类">‹</button>
-    <button class="edu-arrow edu-arrow--next" type="button" aria-label="下一组品类">›</button>
-  <ul class="edu-blocks">
-    <!--EDUBLOCKS-->
-  </ul>
+<section class="wrap edu-sec" id="edu-rows">
+  <div class="edu-sec__head">
+    <h2>教育特惠商品</h2>
+    <p>以下为后端在售的真实商品，按综合排序展示 12 件；后端没有教育专属价字段，实际价格以商品详情页为准。</p>
   </div>
+  <ul class="rows__grid" id="eduGoods"></ul>
+  <p id="eduStatus" hidden></p>
+  <p style="margin:20px 0 0"><a class="btn btn--ghost" href="/list/index.html">查看全部商品</a></p>
+</section>
 
+<section class="wrap edu-sec">
+  <div class="edu-sec__head"><h2>快捷入口</h2><p>认证、积分与常见问题</p></div>
   <ul class="edu-quick">
     <li><a href="/page/newarrival/xpzx.html"><span>新品速递</span><span aria-hidden="true">→</span></a></li>
     <li><a href="/consumptionPoint/list.html"><span>积分兑换</span><span aria-hidden="true">→</span></a></li>
-    <li><a href="#"><span>常见问题</span><span aria-hidden="true">→</span></a></li>
+    <li><a href="#faq"><span>常见问题</span><span aria-hidden="true">→</span></a></li>
   </ul>
 </section>
 
@@ -66,11 +75,7 @@
   </ul>
 </div>
 
-<div class="wrap" id="edu-rows">
-  <!--EDUROWS-->
-</div>
-
-<section class="wrap edu-faq">
+<section class="wrap edu-faq" id="faq">
   <div class="edu-sec__head"><h2>常见问题</h2><p>认证、下单与售后，这里先看一遍</p></div>
   <div class="faq">
     <details open><summary>如何完成学生认证？</summary><p>准备好学生证或在读证明，按页面提示上传，审核通常在一个工作日内完成。</p></details>

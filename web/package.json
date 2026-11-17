@@ -4,6 +4,8 @@
   "version": "1.0.0",
   "description": "Static front-end skeleton of a computer storefront (study build)",
   "scripts": {
-    "build": "node build.mjs"
+    "build": "node build.mjs",
+    "deploy": "node build.mjs && node deploy.mjs",
+    "serve": "npx --yes http-server dist -p 3000 -c-1"
   }
 }
