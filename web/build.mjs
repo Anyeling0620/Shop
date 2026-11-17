@@ -157,6 +157,8 @@ const PAGE_SCRIPTS = {
   order: ['pages/order.js'],
   seckill: ['pages/seckill.js'],
   login: ['pages/login.js'],
+  newarrival: ['pages/newarrival.js'],
+  education: ['pages/education.js'],
 };
 
 rmSync(dist, { recursive: true, force: true });
