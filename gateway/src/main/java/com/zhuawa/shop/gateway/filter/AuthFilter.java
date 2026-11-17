@@ -48,7 +48,10 @@ public class AuthFilter implements GlobalFilter, Ordered {
 
         //3.判断 是否需要直接放行
         logger.info("uri: {}", request.getURI());
-        if (Arrays.asList(skipAuthUrls).contains(request.getURI().toString())) {
+        // 原先 compares 整个 URI 字符串，配置写死 http://localhost:8081/...，
+        // 于是用 127.0.0.1、或网关换了 host/port 时登录接口会被自己拦成 403。
+        // 比较 path（忽略协议、host、端口、query）才符合「这个接口免鉴权」的原意。
+        if (isSkippedUrl(request.getURI().getPath())) {
             return chain.filter(exchange);
         }
 
@@ -135,6 +138,37 @@ public class AuthFilter implements GlobalFilter, Ordered {
             }
             if (matchesPrefix(normalized, p) || matchesPathSegment(path, p)) {
                 logger.debug("skip auth for public path: {} (normalized {})", path, normalized);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 白名单按路径比较。
+     *
+     * 配置值历史上写成完整 URL（http://localhost:8081/user/user/login/do_login），
+     * 这里把它解析成 path 再比，因此两种写法（带不带 host）都能生效。
+     */
+    private boolean isSkippedUrl(String path) {
+        if (path == null || skipAuthUrls == null) {
+            return false;
+        }
+        for (String raw : skipAuthUrls) {
+            if (raw == null || raw.trim().isEmpty()) {
+                continue;
+            }
+            String candidate = raw.trim();
+            int scheme = candidate.indexOf("://");
+            if (scheme >= 0) {
+                int slash = candidate.indexOf('/', scheme + 3);
+                candidate = slash < 0 ? "/" : candidate.substring(slash);
+            }
+            int query = candidate.indexOf('?');
+            if (query >= 0) {
+                candidate = candidate.substring(0, query);
+            }
+            if (candidate.equals(path)) {
                 return true;
             }
         }
