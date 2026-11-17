@@ -1,0 +1,27 @@
+<div class="wrap crumbs"><a href="/index.html">首页</a><span>/</span><span>订单提交成功</span></div>
+
+<section class="wrap orderPage">
+  <div class="orderPage__head">
+    <h1>订单提交成功</h1>
+    <p>这是静态演示：订单只在本地记录，不会真实发货或扣款。</p>
+  </div>
+
+  <div class="orderPage__card" id="orderEmpty" hidden>
+    <p>还没有待展示的订单。</p>
+    <a class="btn" href="/list/index.html">去逛逛</a>
+  </div>
+
+  <div class="orderPage__card" id="orderBody" hidden>
+    <dl class="orderPage__meta">
+      <div><dt>订单号</dt><dd id="orderNo">—</dd></div>
+      <div><dt>下单时间</dt><dd id="orderTime">—</dd></div>
+      <div><dt>收货方式</dt><dd>快递配送（示例）</dd></div>
+    </dl>
+    <ul class="orderPage__items" id="orderItems"></ul>
+    <p class="orderPage__total">应付合计：<b id="orderTotal">￥0</b></p>
+    <div class="orderPage__actions">
+      <a class="btn" href="/index.html">继续购物</a>
+      <a class="btn btn--ghost" href="/list/index.html">再逛逛</a>
+    </div>
+  </div>
+</section>

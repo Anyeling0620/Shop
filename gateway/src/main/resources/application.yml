@@ -8,9 +8,13 @@ spring:
       globalcors:
         corsConfigurations:
           '[/**]': # 匹配所有请求
-            # 设置允许的域名
-            allowedOrigins:
-              - "http://localhost:18004"
+            # 允许的来源。
+            # 用 allowedOriginPatterns 而不是 allowedOrigins：allowCredentials=true 时
+            # allowedOrigins 不支持通配，写死单个端口会让本地起预览服务（换个端口）立刻 CORS 失败。
+            # 前端正式部署在 web-app 的 http://localhost:18004，其余 localhost 端口是开发预览用。
+            allowedOriginPatterns:
+              - "http://localhost:[*]"
+              - "http://127.0.0.1:[*]"
             # 允许所有头信息
             allowedHeaders: "*"
             # 设置允许携带cookie
@@ -68,10 +72,11 @@ spring:
             - StripPrefix=1 # 跳过 seckill，前端请求 /seckill/seckill/**
         - id: zhuawa_shop_search_route
           uri: http://localhost:18003
+          # 不加 StripPrefix：search-service 的类级 @RequestMapping 是 /search/goods，
+          # 前端本来就请求 /search/goods/search/{page}/{size}，前缀必须原样保留。
+          # 其余路由（/goods、/user、/order、/seckill）剥一层后直达服务内部路径，与此不同。
           predicates:
             - Path=/search/**
-          filters:
-            - StripPrefix=1 # 跳过 search，前端请求 /search/goods/search/{page}/{size}
   redis:
     host: 127.0.0.1
     port: 16379
